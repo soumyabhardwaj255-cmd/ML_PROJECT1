@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+
+data/
+models/
+*.edf
+*.seizure
+*.seizures
+
+.ipynb_checkpoints/
+
+.vscode/
+.env
+
+.DS_Store
+Thumbs.db
