@@ -1,0 +1,76 @@
+"""
+Figure + table: Experiment C per-patient LOPO results, untuned vs tuned.
+This is the "chb03 recovery" chart -- shows tuning both raised mean F1
+and sharply reduced the variance across patients.
+
+Ran from the repo root, after experiment_c_generalization.py AND
+experiment_c_tuned.py:
+    python src/eeg_seizure/plots/plot_experiment_C_lopo_comparison.py
+"""
+
+import sys
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+from eeg_seizure.style import COLOR_TUNED, COLOR_UNTUNED, apply_style, save_fig
+
+RESULTS_DIR = Path(__file__).resolve().parents[3] / "results" / "tables"
+FIGURES_DIR = Path(__file__).resolve().parents[3] / "results" / "figures"
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+
+apply_style()
+
+untuned = pd.read_csv(RESULTS_DIR / "experiment_c_lopo_per_patient.csv")
+tuned = pd.read_csv(RESULTS_DIR / "experiment_c_tuned_lopo_per_patient.csv")
+
+merged = untuned[["test_patient", "f1"]].merge(
+    tuned[["test_patient", "f1"]], on="test_patient", suffixes=("_untuned", "_tuned")
+)
+
+x = np.arange(len(merged))
+width = 0.35
+
+fig, ax = plt.subplots(figsize=(9, 5.5))
+ax.bar(x - width / 2, merged["f1_untuned"], width, label="Untuned", color=COLOR_UNTUNED)
+ax.bar(x + width / 2, merged["f1_tuned"], width, label="Tuned", color=COLOR_TUNED)
+
+ax.set_xticks(x)
+ax.set_xticklabels(merged["test_patient"])
+ax.set_ylabel("F1 score (held out as test patient)")
+ax.set_ylim(0, 1.0)
+ax.set_title("Experiment C: per-patient F1 before vs after tuning (leave-one-patient-out)")
+ax.legend(loc="upper right", frameon=False)
+
+# Annotate the chb03 recovery specifically -- the standout result
+if "chb03" in merged["test_patient"].values:
+    idx = merged.index[merged["test_patient"] == "chb03"][0]
+    ax.annotate(
+        "chb03: complete failure\nfixed by tuning",
+        xy=(idx + width / 2, merged.loc[idx, "f1_tuned"]),
+        xytext=(idx + 0.6, merged.loc[idx, "f1_tuned"] + 0.25),
+        fontsize=9,
+        ha="left",
+        arrowprops=dict(arrowstyle="->", color="black", lw=1),
+    )
+
+save_fig(fig, FIGURES_DIR / "experiment_c_lopo_before_after.png")
+
+# --- Markdown tables ---
+untuned_md = untuned[["test_patient", "n_seizure_windows", "precision", "recall", "f1"]].copy()
+untuned_md.columns = ["Patient", "N seizure windows", "Precision", "Recall", "F1"]
+for col in ["Precision", "Recall", "F1"]:
+    untuned_md[col] = untuned_md[col].round(3)
+(RESULTS_DIR / "experiment_c_lopo_untuned_table.md").write_text(untuned_md.to_markdown(index=False))
+
+tuned_md = tuned[["test_patient", "n_seizure_windows", "precision", "recall", "f1"]].copy()
+tuned_md.columns = ["Patient", "N seizure windows", "Precision", "Recall", "F1"]
+for col in ["Precision", "Recall", "F1"]:
+    tuned_md[col] = tuned_md[col].round(3)
+(RESULTS_DIR / "experiment_c_lopo_tuned_table.md").write_text(tuned_md.to_markdown(index=False))
+
+print("Saved experiment_c_lopo_untuned_table.md and experiment_c_lopo_tuned_table.md")
+print("\nUntuned:\n", untuned_md.to_string(index=False))
+print("\nTuned:\n", tuned_md.to_string(index=False))
