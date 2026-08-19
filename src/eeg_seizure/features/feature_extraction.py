@@ -1,7 +1,7 @@
 """
 Combine all four feature families into one flat dict per window. Column
 names are prefixed by family ("time__", "freq__", "entropy__", "hjorth__")
-so Day 5's feature ablation experiment can select a family just by
+so feature ablation experiment can select a family just by
 filtering columns on this prefix — no re-extraction needed.
 """
 

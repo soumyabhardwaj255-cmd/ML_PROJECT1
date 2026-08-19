@@ -3,7 +3,7 @@ Extract time-domain, frequency-domain, entropy, and Hjorth features
 for every window in window_index.csv, producing one master feature table.
 
 Produces:
-    data/processed/feature_table.csv — one row per window, one column per
+    data/processed/feature_table.csv - one row per window, one column per
     (family, channel) feature pair, plus patient/file/label metadata.
 
 Ran from the repo root:

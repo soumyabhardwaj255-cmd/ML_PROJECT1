@@ -2,9 +2,8 @@
 Experiment A: which model performs best?
 
 Trains Logistic Regression, Random Forest, and XGBoost on the SAME
-patient-independent split (chb08 held out, matching Day 4's baseline) and
-the SAME full feature set (all 330 columns) — the only thing that varies
-is the model itself.
+patient-independent split (chb08 held out) and
+the SAME full feature set (all 330 columns)
 
 Ran from the repo root:
     python experiments/experiment_a_models.py

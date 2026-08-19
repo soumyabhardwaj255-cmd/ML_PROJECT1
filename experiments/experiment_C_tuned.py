@@ -3,15 +3,13 @@ Improve LOPO generalization: patient-level normalization + hyperparameter
 tuning via leave-one-patient-out CV (using sklearn's LeaveOneGroupOut,
 which handles the "held-out group" logic directly).
 
-CAVEAT (state this in your write-up): hyperparameters are tuned using LOPO
+CAVEAT: hyperparameters are tuned using LOPO
 CV across the SAME 5 patients used in the final LOPO evaluation below, not
 a separate nested inner loop. This means the final "tuned" LOPO F1 is a
 mildly optimistic estimate, not a fully independent one. Proper nested CV
-would tune on an inner loop within each outer fold — reasonable to skip for
-a 5-patient, one-week project, but worth naming explicitly rather than
-presenting the number as if it were unbiased.
+would tune on an inner loop within each outer fold.
 
-Run from the repo root, after extened_experiment_c.py:
+Ran from the repo root, after extened_experiment_c.py:
     python experiments/experiment_c_tuned.py
 """
 

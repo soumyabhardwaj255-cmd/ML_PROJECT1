@@ -12,10 +12,6 @@ single lucky/unlucky split:
   - patient_dependent: random 80/20 row split ignoring patient identity,
     repeated across 5 random seeds.
 
-The gap between the two means is the core "avoiding data leakage" finding
--- and reporting it as mean +/- std means it can't be dismissed as "you
-just picked a favorable test patient."
-
 Ran from the repo root, after experiment_a_models.py and
 experiment_b_features.py:
     python experiments/experiment_c_generalization.py

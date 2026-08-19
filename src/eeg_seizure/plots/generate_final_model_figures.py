@@ -7,7 +7,7 @@ Uses the exact hyperparameters found by RandomizedSearchCV in
 experiment_c_tuned.py (hardcoded below) rather than re-running the search,
 so this is fast and always reproduces the same figures.
 
-Run from the repo root, after experiment_C_tuned.py:
+Ran from the repo root, after experiment_C_tuned.py:
      python src/eeg_seizure/plots/generate_final_model_figures.py
 """
 
