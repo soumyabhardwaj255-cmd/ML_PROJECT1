@@ -1,0 +1,3 @@
+split,f1,f1_std
+"patient_independent (LOPO, tuned)",0.48941740884079293,0.09976818225064629
+"patient_dependent (5-seed, tuned)",0.91114664944722,0.014703776110923026

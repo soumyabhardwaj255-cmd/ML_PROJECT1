@@ -1,0 +1,2 @@
+experiment,test_patient,precision,recall,f1
+baseline_rf,chb08,0.9411764705882353,0.3463203463203463,0.5063291139240507

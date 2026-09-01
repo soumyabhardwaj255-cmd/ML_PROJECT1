@@ -1,0 +1,72 @@
+"""
+Experiment B: which feature family contributes most?
+
+Fixes the model to whichever won Experiment A (read automatically from its
+results file, not hardcoded), and retrains it on different feature-family
+subsets — time-domain only, frequency-domain only, entropy+Hjorth only,
+and all combined — using the SAME patient-independent split throughout.
+Column names are family-tagged (e.g. "time__mean__C3-P3"), so subsetting
+is just a prefix filter, no re-extraction needed.
+
+Ran from the repo root, AFTER experiment_a_models.py:
+    python experiments/experiment_b_features.py
+"""
+
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
+from eeg_seizure.evaluate import evaluate_predictions
+from eeg_seizure.splits import patient_independent_split
+from eeg_seizure.train import make_logistic_regression, make_random_forest, make_xgboost
+
+PROCESSED_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
+RESULTS_DIR = Path(__file__).resolve().parent.parent / "results" / "tables"
+
+TEST_PATIENT = "chb08"
+
+feature_table = pd.read_csv(PROCESSED_DIR / "feature_table.csv")
+X_train_full, X_test_full, y_train, y_test = patient_independent_split(feature_table, TEST_PATIENT)
+
+# Pick up the winning model from Experiment A rather than hardcoding it —
+# if Experiment A's results change (e.g. you tune a model later), this
+# script stays correct without editing.
+model_comparison = pd.read_csv(RESULTS_DIR / "experiment_a_model_comparison.csv")
+best_model_name = model_comparison.sort_values("f1", ascending=False).iloc[0]["model"]
+print(f"Using winning model from Experiment A: {best_model_name}")
+
+MODEL_FACTORIES = {
+    "logistic_regression": lambda: make_logistic_regression(),
+    "random_forest": lambda: make_random_forest(),
+    "xgboost": lambda: make_xgboost(y_train),
+}
+
+FEATURE_FAMILIES = {
+    "time_domain": ["time__"],
+    "frequency_domain": ["freq__"],
+    "entropy_hjorth": ["entropy__", "hjorth__"],
+    "all_combined": ["time__", "freq__", "entropy__", "hjorth__"],
+}
+
+results = []
+for family_name, prefixes in FEATURE_FAMILIES.items():
+    cols = [c for c in X_train_full.columns if any(c.startswith(p) for p in prefixes)]
+    X_train = X_train_full[cols]
+    X_test = X_test_full[cols]
+
+    print(f"\n=== {family_name} ({len(cols)} features) ===")
+    model = MODEL_FACTORIES[best_model_name]()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    metrics = evaluate_predictions(y_test, y_pred, label=family_name)
+    results.append({"feature_family": family_name, "n_features": len(cols), **metrics})
+
+results_df = pd.DataFrame(results).sort_values("f1", ascending=False)
+results_df.to_csv(RESULTS_DIR / "experiment_b_feature_ablation.csv", index=False)
+
+print("\n=== Summary (sorted by F1) ===")
+print(results_df.to_string(index=False))
+print(f"\nSaved to {RESULTS_DIR / 'experiment_b_feature_ablation.csv'}")
