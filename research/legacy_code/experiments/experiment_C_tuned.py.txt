@@ -1,0 +1,151 @@
+"""
+Improve LOPO generalization: patient-level normalization + hyperparameter
+tuning via leave-one-patient-out CV (using sklearn's LeaveOneGroupOut,
+which handles the "held-out group" logic directly).
+
+CAVEAT: hyperparameters are tuned using LOPO
+CV across the SAME 5 patients used in the final LOPO evaluation below, not
+a separate nested inner loop. This means the final "tuned" LOPO F1 is a
+mildly optimistic estimate, not a fully independent one. Proper nested CV
+would tune on an inner loop within each outer fold.
+
+Ran from the repo root, after extened_experiment_c.py:
+    python experiments/experiment_c_tuned.py
+"""
+
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import LeaveOneGroupOut, RandomizedSearchCV
+from xgboost import XGBClassifier
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
+from eeg_seizure.evaluate import evaluate_predictions
+from eeg_seizure.normalization import patient_normalize
+from eeg_seizure.splits import patient_dependent_split, patient_independent_split
+
+PROCESSED_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
+RESULTS_DIR = Path(__file__).resolve().parent.parent / "results" / "tables"
+
+PATIENTS = ["chb01", "chb02", "chb03", "chb05", "chb08"]
+FEATURE_PREFIXES = ["entropy__", "hjorth__"]  # winning feature set from Experiment B
+DEPENDENT_SPLIT_SEEDS = [0, 1, 2, 3, 4]
+
+feature_table = pd.read_csv(PROCESSED_DIR / "feature_table.csv")
+feature_cols = [c for c in feature_table.columns if any(c.startswith(p) for p in FEATURE_PREFIXES)]
+
+# %%
+# Step 1: patient-level normalization (unsupervised, safe to apply before
+# any split — see normalization.py docstring for why this doesn't leak).
+feature_table_norm = patient_normalize(feature_table, feature_cols)
+
+# %%
+# Step 2: hyperparameter search using leave-one-patient-out CV.
+# scale_pos_weight is included as a tunable value (a few candidates) rather
+# than recomputed exactly per fold — a practical simplification, not exact.
+X = feature_table_norm[feature_cols]
+y = feature_table_norm["label"]
+groups = feature_table_norm["patient"]
+
+param_distributions = {
+    "max_depth": [2, 3, 4, 5],
+    "min_child_weight": [1, 3, 5, 10],
+    "learning_rate": [0.01, 0.05, 0.1, 0.2],
+    "n_estimators": [100, 200, 300],
+    "subsample": [0.6, 0.8, 1.0],
+    "colsample_bytree": [0.6, 0.8, 1.0],
+    "reg_alpha": [0, 0.1, 1, 5],
+    "reg_lambda": [1, 5, 10],
+    "scale_pos_weight": [10, 30, 60, 100],  # ~overall ratio is ~61 (38850/630)
+}
+
+base_model = XGBClassifier(eval_metric="logloss", random_state=42, n_jobs=-1)
+
+search = RandomizedSearchCV(
+    estimator=base_model,
+    param_distributions=param_distributions,
+    n_iter=25,
+    scoring="f1",
+    cv=LeaveOneGroupOut(),
+    random_state=42,
+    n_jobs=-1,
+    verbose=1,
+)
+
+print("Running hyperparameter search (leave-one-patient-out CV, 25 combinations)...")
+search.fit(X, y, groups=groups)
+
+print(f"\nBest CV F1: {search.best_score_:.3f}")
+print(f"Best params: {search.best_params_}")
+
+best_params = search.best_params_
+
+# %%
+# Step 3: re-run the full LOPO + patient-dependent comparison with the
+# tuned hyperparameters and normalized features, so it's directly
+# comparable to the earlier (untuned) experiment_c results.
+lopo_results = []
+for test_patient in PATIENTS:
+    X_train, X_test, y_train, y_test = patient_independent_split(feature_table_norm, test_patient)
+    X_train, X_test = X_train[feature_cols], X_test[feature_cols]
+
+    model = XGBClassifier(eval_metric="logloss", random_state=42, n_jobs=-1, **best_params)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    metrics = evaluate_predictions(y_test, y_pred, verbose=False)
+
+    row = {"test_patient": test_patient, "n_seizure_windows": int(y_test.sum()), **metrics}
+    lopo_results.append(row)
+    print(
+        f"held out {test_patient:>6} (n_seizure={row['n_seizure_windows']:>3}): "
+        f"precision={metrics['precision']:.3f} recall={metrics['recall']:.3f} f1={metrics['f1']:.3f}"
+    )
+
+lopo_df = pd.DataFrame(lopo_results)
+lopo_df.to_csv(RESULTS_DIR / "experiment_c_tuned_lopo_per_patient.csv", index=False)
+
+lopo_f1_mean = lopo_df["f1"].mean()
+lopo_f1_std = lopo_df["f1"].std()
+print(f"\nTuned leave-one-patient-out: F1 = {lopo_f1_mean:.3f} +/- {lopo_f1_std:.3f}")
+
+# %%
+dependent_results = []
+for seed in DEPENDENT_SPLIT_SEEDS:
+    X_train, X_test, y_train, y_test = patient_dependent_split(
+        feature_table_norm, test_size=0.2, random_state=seed
+    )
+    X_train, X_test = X_train[feature_cols], X_test[feature_cols]
+
+    model = XGBClassifier(eval_metric="logloss", random_state=42, n_jobs=-1, **best_params)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    metrics = evaluate_predictions(y_test, y_pred, verbose=False)
+
+    row = {"seed": seed, **metrics}
+    dependent_results.append(row)
+    print(f"seed={seed}: precision={metrics['precision']:.3f} recall={metrics['recall']:.3f} f1={metrics['f1']:.3f}")
+
+dependent_df = pd.DataFrame(dependent_results)
+dependent_df.to_csv(RESULTS_DIR / "experiment_c_tuned_dependent_repeats.csv", index=False)
+
+dependent_f1_mean = dependent_df["f1"].mean()
+dependent_f1_std = dependent_df["f1"].std()
+print(f"\nTuned patient-dependent (5 seeds): F1 = {dependent_f1_mean:.3f} +/- {dependent_f1_std:.3f}")
+
+# %%
+summary_df = pd.DataFrame(
+    [
+        {"split": "patient_independent (LOPO, tuned)", "f1": lopo_f1_mean, "f1_std": lopo_f1_std},
+        {"split": "patient_dependent (5-seed, tuned)", "f1": dependent_f1_mean, "f1_std": dependent_f1_std},
+    ]
+)
+summary_df.to_csv(RESULTS_DIR / "experiment_c_tuned_summary.csv", index=False)
+
+print("\n=== Tuned summary ===")
+print(summary_df.to_string(index=False))
+print(f"\nBest hyperparameters: {best_params}")
+print("\nCompare against results/tables/experiment_c_generalization_gap.csv (untuned) to see improvement.")
+print(f"Saved to {RESULTS_DIR / 'experiment_c_tuned_summary.csv'}")

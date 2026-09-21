@@ -1,0 +1,634 @@
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    f1_score,
+    precision_score,
+    recall_score,
+    accuracy_score,
+    roc_auc_score,
+)
+
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+FEATURE_TABLE = PROJECT_ROOT / "data" / "processed" / "feature_table.csv"
+RESULTS_DIR = PROJECT_ROOT / "data" / "results"
+FIGURES_DIR = PROJECT_ROOT / "data" / "figures"
+
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+
+TEST_PATIENT = "chb08"
+TEST_FILE = "chb08_21.edf"
+
+MODEL_NAME = "Logistic Regression"
+
+# Threshold selected for chb08 by nested patient-independent tuning
+DEMO_THRESHOLD = 0.95
+
+# A predicted seizure run must contain at least this many
+# consecutive 4-second windows to be treated as a detection event.
+MIN_CONSECUTIVE_WINDOWS = 2
+
+
+# ============================================================
+# HELPER: FIND CONTIGUOUS PREDICTED RUNS
+# ============================================================
+
+def find_prediction_runs(df, prediction_column="prediction"):
+    """
+    Find contiguous runs of predicted seizure windows.
+
+    A run is contiguous when the next window begins exactly
+    when the previous window ends.
+
+    Returns:
+        list of dictionaries containing start/end/duration/windows.
+    """
+
+    predicted = df[
+        df[prediction_column] == 1
+    ].sort_values("start_sec").reset_index(drop=True)
+
+    if len(predicted) == 0:
+        return []
+
+    runs = []
+
+    current_start = predicted.loc[0, "start_sec"]
+    current_end = predicted.loc[0, "end_sec"]
+    current_windows = 1
+
+    for i in range(1, len(predicted)):
+
+        start = predicted.loc[i, "start_sec"]
+        end = predicted.loc[i, "end_sec"]
+
+        # Consecutive 4-second windows
+        if np.isclose(start, current_end):
+
+            current_end = end
+            current_windows += 1
+
+        else:
+
+            runs.append(
+                {
+                    "start_sec": current_start,
+                    "end_sec": current_end,
+                    "duration_sec": current_end - current_start,
+                    "windows": current_windows,
+                }
+            )
+
+            current_start = start
+            current_end = end
+            current_windows = 1
+
+    # Add final run
+    runs.append(
+        {
+            "start_sec": current_start,
+            "end_sec": current_end,
+            "duration_sec": current_end - current_start,
+            "windows": current_windows,
+        }
+    )
+
+    return runs
+
+
+# ============================================================
+# LOAD FEATURE TABLE
+# ============================================================
+
+print("=" * 72)
+print("PATIENT-INDEPENDENT EEG ML INFERENCE DEMONSTRATION")
+print("=" * 72)
+
+print(f"Feature table:       {FEATURE_TABLE}")
+print("Training patients:   chb01, chb02, chb03, chb05")
+print(f"Held-out patient:    {TEST_PATIENT}")
+print(f"Test recording:      {TEST_FILE}")
+print(f"Model:               {MODEL_NAME}")
+print(f"Decision threshold:  {DEMO_THRESHOLD:.2f}")
+
+df = pd.read_csv(FEATURE_TABLE)
+
+print(f"\nLoaded feature table: {len(df):,} windows")
+
+
+# ============================================================
+# FEATURE COLUMNS
+# ============================================================
+
+metadata_columns = {
+    "patient",
+    "file",
+    "start_sec",
+    "end_sec",
+    "label",
+}
+
+feature_columns = [
+    c for c in df.columns
+    if c not in metadata_columns
+]
+
+print(f"Feature count: {len(feature_columns)}")
+
+
+# ============================================================
+# TRAIN / TEST SPLIT
+# ============================================================
+
+train_df = df[
+    df["patient"] != TEST_PATIENT
+].copy()
+
+demo_df = df[
+    (df["patient"] == TEST_PATIENT)
+    & (df["file"] == TEST_FILE)
+].copy()
+
+if len(demo_df) == 0:
+    raise ValueError(
+        f"No feature rows found for "
+        f"{TEST_PATIENT} / {TEST_FILE}"
+    )
+
+print("\n" + "-" * 72)
+print("DATA SPLIT")
+print("-" * 72)
+
+print(f"Training windows:       {len(train_df):,}")
+print(f"Demonstration windows:  {len(demo_df):,}")
+print(
+    f"Training patients:      "
+    f"{sorted(train_df['patient'].unique())}"
+)
+print(f"Demonstration patient:  {TEST_PATIENT}")
+
+
+# ============================================================
+# TRAIN MODEL
+# ============================================================
+
+X_train = train_df[feature_columns].to_numpy(dtype=float)
+y_train = train_df["label"].astype(int).to_numpy()
+
+X_demo = demo_df[feature_columns].to_numpy(dtype=float)
+y_demo = demo_df["label"].astype(int).to_numpy()
+
+model = Pipeline(
+    [
+        (
+            "scaler",
+            StandardScaler()
+        ),
+        (
+            "classifier",
+            LogisticRegression(
+                class_weight="balanced",
+                max_iter=2000,
+                random_state=42
+            )
+        ),
+    ]
+)
+
+print("\nTraining Logistic Regression...")
+model.fit(X_train, y_train)
+print("Training complete.")
+
+
+# ============================================================
+# INFERENCE
+# ============================================================
+
+demo_probability = model.predict_proba(X_demo)[:, 1]
+
+demo_prediction = (
+    demo_probability >= DEMO_THRESHOLD
+).astype(int)
+
+demo_df["probability_seizure"] = demo_probability
+demo_df["prediction"] = demo_prediction
+
+
+# ============================================================
+# METRICS
+# ============================================================
+
+accuracy = accuracy_score(
+    y_demo,
+    demo_prediction
+)
+
+precision = precision_score(
+    y_demo,
+    demo_prediction,
+    zero_division=0
+)
+
+recall = recall_score(
+    y_demo,
+    demo_prediction,
+    zero_division=0
+)
+
+f1 = f1_score(
+    y_demo,
+    demo_prediction,
+    zero_division=0
+)
+
+roc_auc = roc_auc_score(
+    y_demo,
+    demo_probability
+)
+
+cm = confusion_matrix(
+    y_demo,
+    demo_prediction,
+    labels=[0, 1]
+)
+
+
+# ============================================================
+# RESULTS
+# ============================================================
+
+print("\n" + "=" * 72)
+print("HELD-OUT RECORDING RESULTS")
+print("=" * 72)
+
+print(f"Recording:       {TEST_FILE}")
+print(f"Patient:         {TEST_PATIENT}")
+print(f"Windows tested:  {len(demo_df):,}")
+print(f"Accuracy:        {accuracy:.4f}")
+print(f"Precision:       {precision:.4f}")
+print(f"Sensitivity:     {recall:.4f}")
+print(f"F1 Score:        {f1:.4f}")
+print(f"ROC-AUC:         {roc_auc:.4f}")
+
+print("\nConfusion Matrix:")
+print(cm)
+
+print("\nClassification Report:")
+print(
+    classification_report(
+        y_demo,
+        demo_prediction,
+        target_names=[
+            "Non-Seizure",
+            "Seizure"
+        ],
+        zero_division=0
+    )
+)
+
+
+# ============================================================
+# ACTUAL SEIZURE INTERVAL
+# ============================================================
+
+actual_seizure = demo_df[
+    demo_df["label"] == 1
+].copy()
+
+if len(actual_seizure) > 0:
+
+    actual_start = actual_seizure["start_sec"].min()
+    actual_end = actual_seizure["end_sec"].max()
+
+else:
+
+    actual_start = None
+    actual_end = None
+
+
+# ============================================================
+# PREDICTED SEIZURE RUNS
+# ============================================================
+
+prediction_runs = find_prediction_runs(
+    demo_df,
+    prediction_column="prediction"
+)
+
+# Keep only sustained runs.
+sustained_runs = [
+    run
+    for run in prediction_runs
+    if run["windows"] >= MIN_CONSECUTIVE_WINDOWS
+]
+
+# Keep isolated predictions separately.
+isolated_runs = [
+    run
+    for run in prediction_runs
+    if run["windows"] < MIN_CONSECUTIVE_WINDOWS
+]
+
+
+# ============================================================
+# PRINT DETECTION EVENTS
+# ============================================================
+
+print("\n" + "-" * 72)
+print("DETECTION EVENTS")
+print("-" * 72)
+
+if actual_start is not None:
+
+    print(
+        f"Actual seizure: "
+        f"{actual_start:.0f}–{actual_end:.0f} s"
+    )
+
+print(
+    f"\nAll predicted seizure runs: "
+    f"{len(prediction_runs)}"
+)
+
+print(
+    f"Sustained predicted runs "
+    f"(>= {MIN_CONSECUTIVE_WINDOWS} windows): "
+    f"{len(sustained_runs)}"
+)
+
+print(
+    f"Isolated predicted runs: "
+    f"{len(isolated_runs)}"
+)
+
+if sustained_runs:
+
+    print("\nSustained predicted events:")
+
+    for i, run in enumerate(
+        sustained_runs,
+        start=1
+    ):
+
+        print(
+            f"  Event {i}: "
+            f"{run['start_sec']:.0f}–"
+            f"{run['end_sec']:.0f} s "
+            f"({run['duration_sec']:.0f} s, "
+            f"{run['windows']} windows)"
+        )
+
+if isolated_runs:
+
+    print("\nIsolated predictions "
+          "(treated as false-positive candidates):")
+
+    for run in isolated_runs[:20]:
+
+        print(
+            f"  {run['start_sec']:.0f}–"
+            f"{run['end_sec']:.0f} s"
+        )
+
+    if len(isolated_runs) > 20:
+        print(
+            f"  ... and "
+            f"{len(isolated_runs) - 20} more"
+        )
+
+
+# ============================================================
+# SAVE WINDOW-LEVEL RESULTS
+# ============================================================
+
+output_columns = [
+    "patient",
+    "file",
+    "start_sec",
+    "end_sec",
+    "label",
+    "probability_seizure",
+    "prediction",
+]
+
+demo_df[output_columns].to_csv(
+    RESULTS_DIR /
+    "ml_demo_chb08_21_predictions.csv",
+    index=False
+)
+
+
+# ============================================================
+# SAVE DETECTION EVENTS
+# ============================================================
+
+event_rows = []
+
+for run in sustained_runs:
+
+    event_rows.append(
+        {
+            "patient": TEST_PATIENT,
+            "file": TEST_FILE,
+            "event_type": "sustained_prediction",
+            "start_sec": run["start_sec"],
+            "end_sec": run["end_sec"],
+            "duration_sec": run["duration_sec"],
+            "windows": run["windows"],
+        }
+    )
+
+for run in isolated_runs:
+
+    event_rows.append(
+        {
+            "patient": TEST_PATIENT,
+            "file": TEST_FILE,
+            "event_type": "isolated_prediction",
+            "start_sec": run["start_sec"],
+            "end_sec": run["end_sec"],
+            "duration_sec": run["duration_sec"],
+            "windows": run["windows"],
+        }
+    )
+
+events_df = pd.DataFrame(event_rows)
+
+events_df.to_csv(
+    RESULTS_DIR /
+    "ml_demo_chb08_21_detection_events.csv",
+    index=False
+)
+
+
+# ============================================================
+# PRESENTATION TIMELINE
+# ============================================================
+
+plt.figure(figsize=(15, 7))
+
+# Probability
+plt.plot(
+    demo_df["start_sec"],
+    demo_df["probability_seizure"],
+    linewidth=1.5,
+    label="Model seizure probability"
+)
+
+# Threshold
+plt.axhline(
+    DEMO_THRESHOLD,
+    linestyle="--",
+    linewidth=1.5,
+    label=f"Decision threshold = {DEMO_THRESHOLD:.2f}"
+)
+
+# Actual seizure
+if actual_start is not None:
+
+    plt.axvspan(
+        actual_start,
+        actual_end,
+        alpha=0.20,
+        label=(
+            f"Actual seizure "
+            f"({actual_start:.0f}–"
+            f"{actual_end:.0f} s)"
+        )
+    )
+
+
+# Sustained predictions
+first_sustained_label = True
+
+for run in sustained_runs:
+
+    plt.axvspan(
+        run["start_sec"],
+        run["end_sec"],
+        alpha=0.15,
+        hatch="//",
+        fill=False,
+        label=(
+            "Sustained model detection"
+            if first_sustained_label
+            else None
+        )
+    )
+
+    first_sustained_label = False
+
+
+plt.xlabel("Recording Time (seconds)")
+plt.ylabel("Seizure Probability")
+plt.title(
+    "Patient-Independent ML Seizure Detection\n"
+    f"{TEST_FILE} — Held-Out Patient {TEST_PATIENT}"
+)
+
+plt.ylim(0, 1.05)
+plt.grid(alpha=0.25)
+plt.legend()
+plt.tight_layout()
+
+plt.savefig(
+    FIGURES_DIR /
+    "ml_demo_chb08_21_detection_timeline.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# SAVE SUMMARY
+# ============================================================
+
+summary = pd.DataFrame(
+    [
+        {
+            "patient": TEST_PATIENT,
+            "file": TEST_FILE,
+            "model": MODEL_NAME,
+            "threshold": DEMO_THRESHOLD,
+            "windows_tested": len(demo_df),
+            "accuracy": accuracy,
+            "precision": precision,
+            "sensitivity_recall": recall,
+            "f1": f1,
+            "roc_auc": roc_auc,
+            "actual_seizure_windows": int(
+                demo_df["label"].sum()
+            ),
+            "predicted_seizure_windows": int(
+                demo_df["prediction"].sum()
+            ),
+            "sustained_prediction_events": len(
+                sustained_runs
+            ),
+            "isolated_prediction_events": len(
+                isolated_runs
+            ),
+            "actual_seizure_start_sec": actual_start,
+            "actual_seizure_end_sec": actual_end,
+        }
+    ]
+)
+
+summary.to_csv(
+    RESULTS_DIR /
+    "ml_demo_chb08_21_summary.csv",
+    index=False
+)
+
+
+# ============================================================
+# COMPLETE
+# ============================================================
+
+print("\n" + "=" * 72)
+print("ML DEMONSTRATION COMPLETE")
+print("=" * 72)
+
+print("\nSaved:")
+print(
+    f"  {RESULTS_DIR / 'ml_demo_chb08_21_predictions.csv'}"
+)
+
+print(
+    f"  {RESULTS_DIR / 'ml_demo_chb08_21_detection_events.csv'}"
+)
+
+print(
+    f"  {RESULTS_DIR / 'ml_demo_chb08_21_summary.csv'}"
+)
+
+print(
+    f"  {FIGURES_DIR / 'ml_demo_chb08_21_detection_timeline.png'}"
+)
+
+print("\nExperimental separation:")
+print(
+    "Training: chb01 + chb02 + chb03 + chb05"
+)
+print(
+    "Testing:  chb08 / chb08_21.edf"
+)
+print(
+    "The held-out patient was never used during training."
+)

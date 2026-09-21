@@ -1,0 +1,47 @@
+{
+  "affected_recordings": 42,
+  "corrected_nonseizure": 38892,
+  "corrected_seizure": 630,
+  "corrected_windows": 39522,
+  "dataset_sha256": "cbce6b49978a7d30ef83ec87e69b52ffb45fd65ffe78e5552876664ea4afd0d6",
+  "legacy_reuse_scope": "All retained values preserved; freshly extracted per-file samples checked during prepare",
+  "previous_nonseizure": 38850,
+  "previous_seizure": 630,
+  "previous_windows": 39480,
+  "raw_and_summary_hashes_unchanged": true,
+  "recordings_checked": 45,
+  "retained_legacy_rows_numerically_verified": 39480,
+  "scaling_checks": [
+    {
+      "held_out": "chb01",
+      "low_magnitude_nonconstant_features": 122,
+      "test_rows": 9581,
+      "training_rows": 29941
+    },
+    {
+      "held_out": "chb02",
+      "low_magnitude_nonconstant_features": 132,
+      "test_rows": 5639,
+      "training_rows": 33883
+    },
+    {
+      "held_out": "chb03",
+      "low_magnitude_nonconstant_features": 123,
+      "test_rows": 9900,
+      "training_rows": 29622
+    },
+    {
+      "held_out": "chb05",
+      "low_magnitude_nonconstant_features": 126,
+      "test_rows": 8102,
+      "training_rows": 31420
+    },
+    {
+      "held_out": "chb08",
+      "low_magnitude_nonconstant_features": 125,
+      "test_rows": 6300,
+      "training_rows": 33222
+    }
+  ],
+  "status": "passed"
+}

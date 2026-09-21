@@ -1,0 +1,3 @@
+# Preserve frozen source/evidence bytes and their recorded SHA-256 identities.
+# In particular, do not apply platform-dependent CRLF conversion on checkout.
+* -text

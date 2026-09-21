@@ -1,0 +1,11 @@
+{
+  "bundle": "results\\corrected\\validation-kd-chb08-seed42\\bundles\\kd_student_chb08_seed42.joblib",
+  "evaluation_parity": true,
+  "mode": "offline; full-recording filtering; events are descriptive, not event-level scores",
+  "model": "kd_student",
+  "seed": 42,
+  "source": "feature_table",
+  "status": "complete",
+  "threshold": 0.5,
+  "windows": 900
+}

@@ -1,0 +1,2 @@
+accuracy,precision,recall,f1,roc_auc,average_precision,tn,fp,fn,tp,windows,model,seed,test_patient,threshold
+0.9636507936507936,0.5040322580645161,0.5411255411255411,0.5219206680584552,0.9070626468056028,0.5072143730908227,5946,123,106,125,6300,logistic_regression,42,chb08,0.95

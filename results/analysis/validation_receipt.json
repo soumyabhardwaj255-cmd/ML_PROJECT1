@@ -1,0 +1,28 @@
+{
+  "classical_prediction_rows": 14,
+  "clean_prediction_parity": true,
+  "dynamics": [
+    {
+      "invalid": 95,
+      "model": "bistable_driven_regularity",
+      "total": 96,
+      "valid": 1
+    },
+    {
+      "invalid": 32,
+      "model": "fhn_sde",
+      "total": 96,
+      "valid": 64
+    }
+  ],
+  "fitting": "none",
+  "frozen_prediction_rows": 22,
+  "invalid_trials_preserved": 127,
+  "maximum_clipped_fraction": 0.0,
+  "outputs_and_source_hashes_verified": true,
+  "protected_artifacts_unchanged": 49,
+  "raw_edf_and_summary_unchanged": true,
+  "scope": "two selected four-second windows; no population or resonance claim",
+  "status": "passed",
+  "trial_and_raw_optimum_reports_recomputed": true
+}

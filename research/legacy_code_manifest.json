@@ -1,0 +1,127 @@
+[
+  {
+    "original": "notebooks/02_preprocess_and_window.py",
+    "archive": "research/legacy_code/notebooks/02_preprocess_and_window.py.txt",
+    "sha256": "065a5cdf7533acd3ed4bbc03b0ce1b5aeca22a0763289f72e393d2cf5748e7ba"
+  },
+  {
+    "original": "notebooks/03_extract_features.py",
+    "archive": "research/legacy_code/notebooks/03_extract_features.py.txt",
+    "sha256": "619f737346d6e8f5fbeeffda6440093cfd480f1c924d61b1edcf7dc26ab35314"
+  },
+  {
+    "original": "notebooks/04_baseline_model.py",
+    "archive": "research/legacy_code/notebooks/04_baseline_model.py.txt",
+    "sha256": "6b45e47b1a78c5f0ed00a17ef97fef3edeb40bc77778fd7f6a486e59a22f3c2b"
+  },
+  {
+    "original": "notebooks/04_train_models.py",
+    "archive": "research/legacy_code/notebooks/04_train_models.py.txt",
+    "sha256": "2565ab0d798f26a6c0aa9231d4077542d96ea818eed233ef3bb355e9134e5cc1"
+  },
+  {
+    "original": "notebooks/05_threshold_tuning.py",
+    "archive": "research/legacy_code/notebooks/05_threshold_tuning.py.txt",
+    "sha256": "a09c1a7f9d7444d03992e8051bf51c60d7c2e6832ed059b4da0fbe394511057e"
+  },
+  {
+    "original": "notebooks/06_feature_importance.py",
+    "archive": "research/legacy_code/notebooks/06_feature_importance.py.txt",
+    "sha256": "906ae248555c54ec026303338687450801334fdd6cdde505ed2c783d248d0662"
+  },
+  {
+    "original": "notebooks/07_final_ml_evaluation.py",
+    "archive": "research/legacy_code/notebooks/07_final_ml_evaluation.py.txt",
+    "sha256": "801e6047b421343cc3f8021dd1a13bd2d4665a97e488ca2d5a9cb0877d13d90a"
+  },
+  {
+    "original": "notebooks/08_ml_demo_inference.py",
+    "archive": "research/legacy_code/notebooks/08_ml_demo_inference.py.txt",
+    "sha256": "6d90ae5f75b6d1e800c7d23dd6acca495d3b468126546a67b06535616139c200"
+  },
+  {
+    "original": "notebooks/09_knowledge_distillation.py",
+    "archive": "research/legacy_code/notebooks/09_knowledge_distillation.py.txt",
+    "sha256": "5e2b962df724a1fc8f05a5a02f49a667a8d9491f8d9eab11782ef8fdb16b9ab9"
+  },
+  {
+    "original": "notebooks/make_kd_lopo_chart.py",
+    "archive": "research/legacy_code/notebooks/make_kd_lopo_chart.py.txt",
+    "sha256": "83e42815e5cb991f71c9aa8bb8bf1f24c14e70daca3c596eade23ac56ad89369"
+  },
+  {
+    "original": "scripts/validate_feature_table.py",
+    "archive": "research/legacy_code/scripts/validate_feature_table.py.txt",
+    "sha256": "a94f10dc573c02e04b26f33fc6421059fcfc5dd22254dfbc022b10157b26fc48"
+  },
+  {
+    "original": "experiments/experiment_A.py",
+    "archive": "research/legacy_code/experiments/experiment_A.py.txt",
+    "sha256": "edfa6d2791b899d45b826fb2fa69679b76547301d8f8ca81acd62a659589945e"
+  },
+  {
+    "original": "experiments/experiment_B.py",
+    "archive": "research/legacy_code/experiments/experiment_B.py.txt",
+    "sha256": "3400467d823003d66869fb53763a9db310db0ca8082d9119b6b1143889202ddd"
+  },
+  {
+    "original": "experiments/experiment_C.py",
+    "archive": "research/legacy_code/experiments/experiment_C.py.txt",
+    "sha256": "618e5a0898e6eea07ff529c8e35fb9fcd9f43654e3f575058de6d807ac4f795b"
+  },
+  {
+    "original": "experiments/experiment_C_tuned.py",
+    "archive": "research/legacy_code/experiments/experiment_C_tuned.py.txt",
+    "sha256": "f906ce63452d080280b3e0d8c2c189061c3f711ce16e5bff2ce7cd442d1bda6d"
+  },
+  {
+    "original": "experiments/extended_experiment_C.py",
+    "archive": "research/legacy_code/experiments/extended_experiment_C.py.txt",
+    "sha256": "6cc8d9a187536e3bd90ccff11e37c641a6bae62c05904dd968bc2a3e0f27c765"
+  },
+  {
+    "original": "src/eeg_seizure/plots/generate_final_model_figures.py",
+    "archive": "research/legacy_code/src/eeg_seizure/plots/generate_final_model_figures.py.txt",
+    "sha256": "074479fb6b4d7adf68eccb341c58bb012d8efdb87be099c7f6e40f1a484b7814"
+  },
+  {
+    "original": "src/eeg_seizure/plots/plot_class_imbalance.py",
+    "archive": "research/legacy_code/src/eeg_seizure/plots/plot_class_imbalance.py.txt",
+    "sha256": "3c9af5df9ae2e380d34de16cbb5e6b11f02e074946cad12ed85c38bb2cff2e93"
+  },
+  {
+    "original": "src/eeg_seizure/plots/plot_experiment_A.py",
+    "archive": "research/legacy_code/src/eeg_seizure/plots/plot_experiment_A.py.txt",
+    "sha256": "765995424013104329481de357e930d09c8cb0dccb60833669462ca0ed017977"
+  },
+  {
+    "original": "src/eeg_seizure/plots/plot_experiment_B.py",
+    "archive": "research/legacy_code/src/eeg_seizure/plots/plot_experiment_B.py.txt",
+    "sha256": "0ad7a63882c6e385cc25f9ee7ea87c4e4d28773b589bc94bf37b89496cc83910"
+  },
+  {
+    "original": "src/eeg_seizure/plots/plot_experiment_C_gap_summary.py",
+    "archive": "research/legacy_code/src/eeg_seizure/plots/plot_experiment_C_gap_summary.py.txt",
+    "sha256": "3f10db37600a911f35947fa7cf89947b81b261bfb8b428c5c77c63bd649655c3"
+  },
+  {
+    "original": "src/eeg_seizure/plots/plot_experiment_C_lopo_comparison.py",
+    "archive": "research/legacy_code/src/eeg_seizure/plots/plot_experiment_C_lopo_comparison.py.txt",
+    "sha256": "8c82862afb5803fa27ad12c9e0d794106a7487df1e0bb053c99f73ade3234271"
+  },
+  {
+    "original": "notebooks/01_data_exploration.py",
+    "archive": "research/legacy_code/notebooks/01_data_exploration.py.txt",
+    "sha256": "2ae0c9b220c3fb984ec37ff4b929e09a7b42011ff8ff65dfd5920b027b8ad89f"
+  },
+  {
+    "original": "scripts/seizures_per_patient.py",
+    "archive": "research/legacy_code/scripts/seizures_per_patient.py.txt",
+    "sha256": "6dc653c919a3380642ce367ebe46d26a96fefdeb795a7f1e7c8fb031b368131c"
+  },
+  {
+    "original": "src/eeg_seizure/train.py",
+    "archive": "research/legacy_code/src/eeg_seizure/train.py.txt",
+    "sha256": "06005f430cbd02431355351aa89d4eb21838f6dc160a788c2afc83f112f97abd"
+  }
+]

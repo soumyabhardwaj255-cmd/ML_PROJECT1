@@ -1,0 +1,291 @@
+"""
+Nested patient-independent threshold tuning for the CHB-MIT seizure models.
+
+Important:
+- The outer test patient is NEVER used to choose a threshold.
+- Thresholds are selected inside the outer training set using patient-grouped
+  inner cross-validation.
+- The final model is then refit on all four outer-training patients and
+  evaluated on the held-out patient.
+
+This produces a fair threshold-tuned comparison against the default 0.5
+decision threshold used in the baseline experiment.
+"""
+
+from pathlib import Path
+import warnings
+
+import numpy as np
+import pandas as pd
+
+from sklearn.exceptions import UndefinedMetricWarning
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+)
+from sklearn.model_selection import GroupKFold
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+
+warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA_PATH = ROOT / "data" / "processed" / "feature_table.csv"
+RESULTS_DIR = ROOT / "data" / "results"
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+META_COLUMNS = ["patient", "file", "start_sec", "end_sec", "label"]
+PATIENTS = ["chb01", "chb02", "chb03", "chb05", "chb08"]
+RANDOM_STATE = 42
+
+# A practical threshold grid. The threshold is selected only from
+# inner-validation predictions, never from the outer test patient.
+THRESHOLDS = np.arange(0.05, 0.96, 0.01)
+
+
+def make_models(scale_pos_weight):
+    return {
+        "Logistic Regression": Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("model", LogisticRegression(
+                class_weight="balanced",
+                max_iter=2000,
+                solver="liblinear",
+                random_state=RANDOM_STATE,
+            )),
+        ]),
+        "Random Forest": Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("model", RandomForestClassifier(
+                n_estimators=300,
+                class_weight="balanced_subsample",
+                random_state=RANDOM_STATE,
+                n_jobs=-1,
+                max_features="sqrt",
+                min_samples_leaf=2,
+            )),
+        ]),
+        "XGBoost": Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("model", XGBClassifier(
+                n_estimators=300,
+                max_depth=5,
+                learning_rate=0.05,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                objective="binary:logistic",
+                eval_metric="logloss",
+                scale_pos_weight=scale_pos_weight,
+                random_state=RANDOM_STATE,
+                n_jobs=-1,
+                tree_method="hist",
+            )),
+        ]),
+    }
+
+
+def choose_threshold(y_true, scores):
+    """Choose the threshold maximizing validation seizure F1."""
+    best_threshold = 0.50
+    best_f1 = -1.0
+
+    for threshold in THRESHOLDS:
+        pred = (scores >= threshold).astype(int)
+        score = f1_score(y_true, pred, zero_division=0)
+
+        if score > best_f1:
+            best_f1 = score
+            best_threshold = float(threshold)
+
+    return best_threshold, best_f1
+
+
+def calculate_metrics(y_true, y_pred, scores):
+    return {
+        "accuracy": accuracy_score(y_true, y_pred),
+        "precision": precision_score(y_true, y_pred, zero_division=0),
+        "recall_sensitivity": recall_score(y_true, y_pred, zero_division=0),
+        "f1": f1_score(y_true, y_pred, zero_division=0),
+        "roc_auc": (
+            roc_auc_score(y_true, scores)
+            if len(np.unique(y_true)) == 2 else np.nan
+        ),
+    }
+
+
+def main():
+    df = pd.read_csv(DATA_PATH)
+
+    feature_columns = [c for c in df.columns if c not in META_COLUMNS]
+    X = df[feature_columns]
+    y = df["label"].astype(int)
+    groups = df["patient"]
+
+    all_metrics = []
+    all_predictions = []
+    threshold_rows = []
+
+    print("=" * 72)
+    print("NESTED PATIENT-INDEPENDENT THRESHOLD TUNING")
+    print("=" * 72)
+    print("Outer evaluation: Leave-One-Patient-Out")
+    print("Inner threshold selection: 4-fold patient-grouped CV")
+    print("Threshold objective: maximize seizure F1")
+    print("Outer test patient is never used to choose its threshold.")
+
+    for test_patient in PATIENTS:
+        outer_train = groups != test_patient
+        outer_test = groups == test_patient
+
+        X_train = X.loc[outer_train]
+        y_train = y.loc[outer_train]
+        g_train = groups.loc[outer_train]
+
+        X_test = X.loc[outer_test]
+        y_test = y.loc[outer_test]
+
+        train_pos = int((y_train == 1).sum())
+        train_neg = int((y_train == 0).sum())
+        scale_pos_weight = train_neg / train_pos
+
+        print("\n" + "-" * 72)
+        print(f"OUTER TEST PATIENT: {test_patient}")
+
+        for model_name in [
+            "Logistic Regression",
+            "Random Forest",
+            "XGBoost",
+        ]:
+            # ------------------------------------------------------------
+            # Inner CV: obtain out-of-fold probabilities across the four
+            # training patients. These probabilities are used ONLY to
+            # choose the threshold.
+            # ------------------------------------------------------------
+            inner_cv = GroupKFold(n_splits=4)
+            inner_scores = np.zeros(len(y_train), dtype=float)
+
+            print(f"  {model_name}: selecting threshold...", end=" ", flush=True)
+
+            for inner_train_idx, inner_val_idx in inner_cv.split(
+                X_train, y_train, g_train
+            ):
+                inner_model = make_models(scale_pos_weight)[model_name]
+
+                X_inner_train = X_train.iloc[inner_train_idx]
+                y_inner_train = y_train.iloc[inner_train_idx]
+                X_inner_val = X_train.iloc[inner_val_idx]
+
+                inner_model.fit(X_inner_train, y_inner_train)
+                inner_scores[inner_val_idx] = (
+                    inner_model.predict_proba(X_inner_val)[:, 1]
+                )
+
+            threshold, validation_f1 = choose_threshold(y_train, inner_scores)
+
+            # ------------------------------------------------------------
+            # Outer model: refit using ALL four training patients.
+            # ------------------------------------------------------------
+            outer_model = make_models(scale_pos_weight)[model_name]
+            outer_model.fit(X_train, y_train)
+
+            test_scores = outer_model.predict_proba(X_test)[:, 1]
+            test_pred = (test_scores >= threshold).astype(int)
+
+            m = calculate_metrics(y_test, test_pred, test_scores)
+            m.update({
+                "model": model_name,
+                "test_patient": test_patient,
+                "threshold": threshold,
+                "inner_validation_f1": validation_f1,
+                "test_samples": len(y_test),
+                "test_seizure_samples": int((y_test == 1).sum()),
+            })
+            all_metrics.append(m)
+
+            threshold_rows.append({
+                "model": model_name,
+                "test_patient": test_patient,
+                "selected_threshold": threshold,
+                "inner_validation_f1": validation_f1,
+            })
+
+            pred_df = df.loc[outer_test, META_COLUMNS].copy()
+            pred_df["model"] = model_name
+            pred_df["threshold"] = threshold
+            pred_df["prediction"] = test_pred
+            pred_df["probability_seizure"] = test_scores
+            all_predictions.append(pred_df)
+
+            print(
+                f"threshold={threshold:.2f}, "
+                f"F1={m['f1']:.4f}, "
+                f"recall={m['recall_sensitivity']:.4f}, "
+                f"precision={m['precision']:.4f}, "
+                f"ROC-AUC={m['roc_auc']:.4f}"
+            )
+
+    metrics_df = pd.DataFrame(all_metrics)
+    thresholds_df = pd.DataFrame(threshold_rows)
+    predictions_df = pd.concat(all_predictions, ignore_index=True)
+
+    metrics_df.to_csv(
+        RESULTS_DIR / "ml_threshold_metrics_by_patient.csv",
+        index=False,
+    )
+    thresholds_df.to_csv(
+        RESULTS_DIR / "ml_selected_thresholds.csv",
+        index=False,
+    )
+    predictions_df.to_csv(
+        RESULTS_DIR / "ml_threshold_predictions.csv",
+        index=False,
+    )
+
+    summary_rows = []
+    for model_name, g in metrics_df.groupby("model"):
+        summary_rows.append({
+            "model": model_name,
+            "accuracy_mean": g["accuracy"].mean(),
+            "precision_mean": g["precision"].mean(),
+            "recall_sensitivity_mean": g["recall_sensitivity"].mean(),
+            "f1_mean": g["f1"].mean(),
+            "roc_auc_mean": g["roc_auc"].mean(),
+            "threshold_mean": g["threshold"].mean(),
+        })
+
+    summary_df = pd.DataFrame(summary_rows).sort_values(
+        "f1_mean", ascending=False
+    )
+    summary_df.to_csv(
+        RESULTS_DIR / "ml_threshold_model_summary.csv",
+        index=False,
+    )
+
+    print("\n" + "=" * 72)
+    print("THRESHOLD-TUNED PATIENT-INDEPENDENT RESULTS")
+    print("=" * 72)
+    print(
+        summary_df.to_string(
+            index=False,
+            float_format=lambda x: f"{x:.4f}",
+        )
+    )
+
+    print("\nSaved:")
+    print(f"  {RESULTS_DIR / 'ml_threshold_metrics_by_patient.csv'}")
+    print(f"  {RESULTS_DIR / 'ml_selected_thresholds.csv'}")
+    print(f"  {RESULTS_DIR / 'ml_threshold_predictions.csv'}")
+    print(f"  {RESULTS_DIR / 'ml_threshold_model_summary.csv'}")
+
+
+if __name__ == "__main__":
+    main()

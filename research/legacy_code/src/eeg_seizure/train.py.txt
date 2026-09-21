@@ -1,0 +1,54 @@
+"""
+Model factories for Experiment A (model comparison). Each returns an
+unfitted, ready-to-train estimator with imbalance handling already
+configured — a plain classifier would just learn to predict the majority
+class given our ~1.6% seizure rate.
+"""
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from xgboost import XGBClassifier
+
+def make_logistic_regression():
+    """
+    Wrapped in a scaling pipeline since LogReg is sensitive to feature
+    scale, and our feature table mixes raw-voltage-scale measurements with
+    unitless/bounded ones spanning roughly 1e-4 to 48.
+    Scaling inside the pipeline means it's fit only on the training fold.
+    """
+    return make_pipeline(
+        StandardScaler(),
+        LogisticRegression(class_weight="balanced", max_iter=2000, random_state=42),
+    )
+
+
+def make_random_forest():
+    return RandomForestClassifier(
+        n_estimators=200, class_weight="balanced", random_state=42, n_jobs=-1
+    )
+
+
+def make_xgboost(y_train):
+    """
+    XGBoost has no class_weight param; scale_pos_weight serves the same
+    purpose, upweighting the minority (seizure) class roughly by the ratio
+    of negative to positive examples in the training set.
+    """
+    scale_pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
+    return XGBClassifier(
+        n_estimators=200,
+        scale_pos_weight=scale_pos_weight,
+        eval_metric="logloss",
+        random_state=42,
+        n_jobs=-1,
+    )
+
+
+def get_models(y_train):
+    """Returns {model_name: unfitted estimator} for Experiment A."""
+    return {
+        "logistic_regression": make_logistic_regression(),
+        "random_forest": make_random_forest(),
+        "xgboost": make_xgboost(y_train),
+    }

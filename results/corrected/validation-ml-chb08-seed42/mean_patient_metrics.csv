@@ -1,0 +1,2 @@
+model,seed,accuracy_mean,accuracy_std,precision_mean,precision_std,recall_mean,recall_std,f1_mean,f1_std,roc_auc_mean,roc_auc_std,average_precision_mean,average_precision_std
+logistic_regression,42,0.9636507936507936,,0.5040322580645161,,0.5411255411255411,,0.5219206680584552,,0.9070626468056028,,0.5072143730908227,

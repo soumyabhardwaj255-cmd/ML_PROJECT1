@@ -1,0 +1,80 @@
+{
+  "dataset_sha256": "cbce6b49978a7d30ef83ec87e69b52ffb45fd65ffe78e5552876664ea4afd0d6",
+  "demos": [
+    {
+      "evaluation_parity": true,
+      "run": "demo-kd-table-v2",
+      "source": "feature_table",
+      "windows": 900
+    },
+    {
+      "evaluation_parity": true,
+      "run": "demo-kd-edf-v2",
+      "source": "edf",
+      "windows": 900
+    },
+    {
+      "evaluation_parity": true,
+      "run": "demo-ml-table",
+      "source": "feature_table",
+      "windows": 900
+    }
+  ],
+  "environment": {
+    "packages": {
+      "antropy": "0.2.2",
+      "joblib": "1.5.3",
+      "matplotlib": "3.11.1",
+      "mne": "1.12.1",
+      "numpy": "2.4.6",
+      "pandas": "3.0.5",
+      "scikit-learn": "1.9.0",
+      "scipy": "1.17.1",
+      "tabulate": "0.9.0",
+      "torch": "2.14.0",
+      "xgboost": "3.2.0"
+    },
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.9"
+  },
+  "held_out_windows": 6300,
+  "inner_fold_weights": [
+    81.37282229965157,
+    76.69859154929577,
+    77.79054054054055,
+    95.98841698841699
+  ],
+  "real_training_rows": 33222,
+  "seeded_real_repeat_predictions_byte_identical": true,
+  "status": "passed",
+  "students": [
+    {
+      "csv_probability_tolerance": {
+        "atol": 1e-07,
+        "rtol": 1e-05
+      },
+      "epochs": 2,
+      "features": 50,
+      "model": "student_baseline",
+      "parameters": 2177,
+      "saved_decisions_exact": true,
+      "selected_features_below_old_std_cutoff": 22,
+      "training_only_imputation_and_scaling_verified": true
+    },
+    {
+      "csv_probability_tolerance": {
+        "atol": 1e-07,
+        "rtol": 1e-05
+      },
+      "epochs": 2,
+      "features": 50,
+      "model": "kd_student",
+      "parameters": 2177,
+      "saved_decisions_exact": true,
+      "selected_features_below_old_std_cutoff": 22,
+      "training_only_imputation_and_scaling_verified": true
+    }
+  ],
+  "teacher_outer_training_weight_verified": true,
+  "teacher_top50_verified": true
+}

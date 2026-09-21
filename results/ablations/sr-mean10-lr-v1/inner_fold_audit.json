@@ -1,0 +1,522 @@
+[
+  {
+    "arm": "canonical330",
+    "class_ratio": 50.270042194092824,
+    "outer_patient": "chb01",
+    "train_patients": [
+      "chb03",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 474,
+    "training_windows": 24302,
+    "validation_patient": "chb02"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 47.29156626506024,
+    "outer_patient": "chb01",
+    "train_patients": [
+      "chb02",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 415,
+    "training_windows": 20041,
+    "validation_patient": "chb03"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 56.77513227513227,
+    "outer_patient": "chb01",
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb08"
+    ],
+    "training_positive": 378,
+    "training_windows": 21839,
+    "validation_patient": "chb05"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 81.37282229965157,
+    "outer_patient": "chb01",
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 287,
+    "training_windows": 23641,
+    "validation_patient": "chb08"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 50.270042194092824,
+    "outer_patient": "chb02",
+    "train_patients": [
+      "chb03",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 474,
+    "training_windows": 24302,
+    "validation_patient": "chb01"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 48.65424430641822,
+    "outer_patient": "chb02",
+    "train_patients": [
+      "chb01",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 483,
+    "training_windows": 23983,
+    "validation_patient": "chb03"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 56.80493273542601,
+    "outer_patient": "chb02",
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb08"
+    ],
+    "training_positive": 446,
+    "training_windows": 25781,
+    "validation_patient": "chb05"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 76.69859154929577,
+    "outer_patient": "chb02",
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 355,
+    "training_windows": 27583,
+    "validation_patient": "chb08"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 47.29156626506024,
+    "outer_patient": "chb03",
+    "train_patients": [
+      "chb02",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 415,
+    "training_windows": 20041,
+    "validation_patient": "chb01"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 48.65424430641822,
+    "outer_patient": "chb03",
+    "train_patients": [
+      "chb01",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 483,
+    "training_windows": 23983,
+    "validation_patient": "chb02"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 54.60723514211886,
+    "outer_patient": "chb03",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb08"
+    ],
+    "training_positive": 387,
+    "training_windows": 21520,
+    "validation_patient": "chb05"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 77.79054054054055,
+    "outer_patient": "chb03",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb05"
+    ],
+    "training_positive": 296,
+    "training_windows": 23322,
+    "validation_patient": "chb08"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 56.77513227513227,
+    "outer_patient": "chb05",
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb08"
+    ],
+    "training_positive": 378,
+    "training_windows": 21839,
+    "validation_patient": "chb01"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 56.80493273542601,
+    "outer_patient": "chb05",
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb08"
+    ],
+    "training_positive": 446,
+    "training_windows": 25781,
+    "validation_patient": "chb02"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 54.60723514211886,
+    "outer_patient": "chb05",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb08"
+    ],
+    "training_positive": 387,
+    "training_windows": 21520,
+    "validation_patient": "chb03"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 95.98841698841699,
+    "outer_patient": "chb05",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb03"
+    ],
+    "training_positive": 259,
+    "training_windows": 25120,
+    "validation_patient": "chb08"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 81.37282229965157,
+    "outer_patient": "chb08",
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 287,
+    "training_windows": 23641,
+    "validation_patient": "chb01"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 76.69859154929577,
+    "outer_patient": "chb08",
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 355,
+    "training_windows": 27583,
+    "validation_patient": "chb02"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 77.79054054054055,
+    "outer_patient": "chb08",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb05"
+    ],
+    "training_positive": 296,
+    "training_windows": 23322,
+    "validation_patient": "chb03"
+  },
+  {
+    "arm": "canonical330",
+    "class_ratio": 95.98841698841699,
+    "outer_patient": "chb08",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb03"
+    ],
+    "training_positive": 259,
+    "training_windows": 25120,
+    "validation_patient": "chb05"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 50.270042194092824,
+    "outer_patient": "chb01",
+    "train_patients": [
+      "chb03",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 474,
+    "training_windows": 24302,
+    "validation_patient": "chb02"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 47.29156626506024,
+    "outer_patient": "chb01",
+    "train_patients": [
+      "chb02",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 415,
+    "training_windows": 20041,
+    "validation_patient": "chb03"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 56.77513227513227,
+    "outer_patient": "chb01",
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb08"
+    ],
+    "training_positive": 378,
+    "training_windows": 21839,
+    "validation_patient": "chb05"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 81.37282229965157,
+    "outer_patient": "chb01",
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 287,
+    "training_windows": 23641,
+    "validation_patient": "chb08"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 50.270042194092824,
+    "outer_patient": "chb02",
+    "train_patients": [
+      "chb03",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 474,
+    "training_windows": 24302,
+    "validation_patient": "chb01"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 48.65424430641822,
+    "outer_patient": "chb02",
+    "train_patients": [
+      "chb01",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 483,
+    "training_windows": 23983,
+    "validation_patient": "chb03"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 56.80493273542601,
+    "outer_patient": "chb02",
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb08"
+    ],
+    "training_positive": 446,
+    "training_windows": 25781,
+    "validation_patient": "chb05"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 76.69859154929577,
+    "outer_patient": "chb02",
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 355,
+    "training_windows": 27583,
+    "validation_patient": "chb08"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 47.29156626506024,
+    "outer_patient": "chb03",
+    "train_patients": [
+      "chb02",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 415,
+    "training_windows": 20041,
+    "validation_patient": "chb01"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 48.65424430641822,
+    "outer_patient": "chb03",
+    "train_patients": [
+      "chb01",
+      "chb05",
+      "chb08"
+    ],
+    "training_positive": 483,
+    "training_windows": 23983,
+    "validation_patient": "chb02"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 54.60723514211886,
+    "outer_patient": "chb03",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb08"
+    ],
+    "training_positive": 387,
+    "training_windows": 21520,
+    "validation_patient": "chb05"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 77.79054054054055,
+    "outer_patient": "chb03",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb05"
+    ],
+    "training_positive": 296,
+    "training_windows": 23322,
+    "validation_patient": "chb08"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 56.77513227513227,
+    "outer_patient": "chb05",
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb08"
+    ],
+    "training_positive": 378,
+    "training_windows": 21839,
+    "validation_patient": "chb01"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 56.80493273542601,
+    "outer_patient": "chb05",
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb08"
+    ],
+    "training_positive": 446,
+    "training_windows": 25781,
+    "validation_patient": "chb02"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 54.60723514211886,
+    "outer_patient": "chb05",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb08"
+    ],
+    "training_positive": 387,
+    "training_windows": 21520,
+    "validation_patient": "chb03"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 95.98841698841699,
+    "outer_patient": "chb05",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb03"
+    ],
+    "training_positive": 259,
+    "training_windows": 25120,
+    "validation_patient": "chb08"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 81.37282229965157,
+    "outer_patient": "chb08",
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 287,
+    "training_windows": 23641,
+    "validation_patient": "chb01"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 76.69859154929577,
+    "outer_patient": "chb08",
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 355,
+    "training_windows": 27583,
+    "validation_patient": "chb02"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 77.79054054054055,
+    "outer_patient": "chb08",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb05"
+    ],
+    "training_positive": 296,
+    "training_windows": 23322,
+    "validation_patient": "chb03"
+  },
+  {
+    "arm": "sr332",
+    "class_ratio": 95.98841698841699,
+    "outer_patient": "chb08",
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb03"
+    ],
+    "training_positive": 259,
+    "training_windows": 25120,
+    "validation_patient": "chb05"
+  }
+]

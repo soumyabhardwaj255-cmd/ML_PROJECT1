@@ -1,0 +1,9 @@
+mode,feature,comparison,paired_contexts,spearman
+centered,sr_value,42 vs 43,135,0.7021510096575944
+centered,sr_value,42 vs 44,135,0.6920934542971418
+centered,cr_value,42 vs 43,135,-0.158613565250128
+centered,cr_value,42 vs 44,135,0.18073186145815698
+trailing,sr_value,42 vs 43,135,0.6992244659057653
+trailing,sr_value,42 vs 44,135,0.6985903814262023
+trailing,cr_value,42 vs 43,135,-0.0782249307233779
+trailing,cr_value,42 vs 44,135,0.008628500138383012

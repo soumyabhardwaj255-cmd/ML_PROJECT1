@@ -1,0 +1,5 @@
+mode,condition,sr_reason,cr_reason,trials
+centered,driven,ok,ok,2700
+centered,no_drive,undefined_spectral_ratio,ok,2700
+trailing,driven,ok,ok,2700
+trailing,no_drive,undefined_spectral_ratio,ok,2700

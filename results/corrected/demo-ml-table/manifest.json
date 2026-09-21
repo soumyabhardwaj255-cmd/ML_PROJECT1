@@ -1,0 +1,11 @@
+{
+  "bundle": "results\\corrected\\validation-ml-chb08-seed42\\bundles\\logistic_regression_chb08_seed42.joblib",
+  "evaluation_parity": true,
+  "mode": "offline; full-recording filtering; events are descriptive, not event-level scores",
+  "model": "logistic_regression",
+  "seed": 42,
+  "source": "feature_table",
+  "status": "complete",
+  "threshold": 0.95,
+  "windows": 900
+}

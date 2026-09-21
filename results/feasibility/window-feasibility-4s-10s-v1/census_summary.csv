@@ -1,0 +1,3 @@
+duration_sec,windows,seizure,nonseizure,mixed,mixed_negative,seizure_seconds_in_negative_windows,discarded_tail_sec,psd_valid_windows,psd_valid_channel_windows
+4,39522,630,38892,37,13,13.0,6.0,39522,869484
+10,15808,250,15558,49,24,64.0,14.0,15808,347776

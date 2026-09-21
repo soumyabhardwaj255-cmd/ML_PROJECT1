@@ -1,0 +1,472 @@
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+# ============================================================
+# PATHS
+# ============================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+RESULTS_DIR = PROJECT_ROOT / "data" / "results"
+FIGURES_DIR = PROJECT_ROOT / "data" / "figures"
+
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+
+
+# ============================================================
+# LOAD EXISTING FEATURE IMPORTANCE RESULTS
+# ============================================================
+
+rf_path = RESULTS_DIR / "feature_importance_random_forest.csv"
+xgb_path = RESULTS_DIR / "feature_importance_xgboost.csv"
+
+rf = pd.read_csv(rf_path)
+xgb = pd.read_csv(xgb_path)
+
+print("=" * 72)
+print("EEG FEATURE IMPORTANCE ANALYSIS")
+print("=" * 72)
+
+print(f"Random Forest importance file: {rf_path}")
+print(f"XGBoost importance file:       {xgb_path}")
+
+
+# ============================================================
+# IDENTIFY FEATURE / IMPORTANCE COLUMNS
+# ============================================================
+
+def identify_columns(df):
+    feature_candidates = [
+        "feature",
+        "Feature",
+        "feature_name",
+        "Feature_Name",
+    ]
+
+    importance_candidates = [
+        "importance",
+        "Importance",
+        "feature_importance",
+        "Feature_Importance",
+    ]
+
+    feature_col = next(
+        (c for c in feature_candidates if c in df.columns),
+        None
+    )
+
+    importance_col = next(
+        (c for c in importance_candidates if c in df.columns),
+        None
+    )
+
+    if feature_col is None or importance_col is None:
+        raise ValueError(
+            f"Could not identify feature/importance columns.\n"
+            f"Available columns: {list(df.columns)}"
+        )
+
+    return feature_col, importance_col
+
+
+rf_feature_col, rf_importance_col = identify_columns(rf)
+xgb_feature_col, xgb_importance_col = identify_columns(xgb)
+
+rf = rf.rename(
+    columns={
+        rf_feature_col: "feature",
+        rf_importance_col: "importance",
+    }
+)
+
+xgb = xgb.rename(
+    columns={
+        xgb_feature_col: "feature",
+        xgb_importance_col: "importance",
+    }
+)
+
+rf = rf.sort_values("importance", ascending=False).reset_index(drop=True)
+xgb = xgb.sort_values("importance", ascending=False).reset_index(drop=True)
+
+
+# ============================================================
+# TOP FEATURES
+# ============================================================
+
+TOP_N = 20
+
+print("\n" + "-" * 72)
+print(f"TOP {TOP_N} RANDOM FOREST FEATURES")
+print("-" * 72)
+
+print(
+    rf[["feature", "importance"]]
+    .head(TOP_N)
+    .to_string(index=False)
+)
+
+print("\n" + "-" * 72)
+print(f"TOP {TOP_N} XGBOOST FEATURES")
+print("-" * 72)
+
+print(
+    xgb[["feature", "importance"]]
+    .head(TOP_N)
+    .to_string(index=False)
+)
+
+
+# ============================================================
+# SAVE TOP FEATURES
+# ============================================================
+
+rf.head(TOP_N).to_csv(
+    RESULTS_DIR / "top20_features_random_forest.csv",
+    index=False
+)
+
+xgb.head(TOP_N).to_csv(
+    RESULTS_DIR / "top20_features_xgboost.csv",
+    index=False
+)
+
+
+# ============================================================
+# FEATURE FAMILY EXTRACTION
+# ============================================================
+
+def feature_family(feature_name):
+    """
+    Extract the broad feature family from our feature naming scheme.
+
+    Examples:
+        time__std__C3-P3       -> time
+        frequency__delta__C3-P3 -> frequency
+        entropy__spectral__C3-P3 -> entropy
+        hjorth__mobility__C3-P3 -> hjorth
+    """
+    parts = str(feature_name).split("__")
+
+    if len(parts) >= 1:
+        return parts[0]
+
+    return "unknown"
+
+
+def feature_channel(feature_name):
+    """
+    Extract EEG channel from our feature naming scheme.
+    """
+    parts = str(feature_name).split("__")
+
+    if len(parts) >= 3:
+        return parts[-1]
+
+    return "unknown"
+
+
+rf["family"] = rf["feature"].apply(feature_family)
+rf["channel"] = rf["feature"].apply(feature_channel)
+
+xgb["family"] = xgb["feature"].apply(feature_family)
+xgb["channel"] = xgb["feature"].apply(feature_channel)
+
+
+# ============================================================
+# FEATURE FAMILY IMPORTANCE
+# ============================================================
+
+rf_family = (
+    rf.groupby("family", as_index=False)["importance"]
+    .sum()
+    .sort_values("importance", ascending=False)
+)
+
+xgb_family = (
+    xgb.groupby("family", as_index=False)["importance"]
+    .sum()
+    .sort_values("importance", ascending=False)
+)
+
+print("\n" + "-" * 72)
+print("RANDOM FOREST IMPORTANCE BY FEATURE FAMILY")
+print("-" * 72)
+
+print(rf_family.to_string(index=False))
+
+print("\n" + "-" * 72)
+print("XGBOOST IMPORTANCE BY FEATURE FAMILY")
+print("-" * 72)
+
+print(xgb_family.to_string(index=False))
+
+
+rf_family.to_csv(
+    RESULTS_DIR / "feature_family_importance_random_forest.csv",
+    index=False
+)
+
+xgb_family.to_csv(
+    RESULTS_DIR / "feature_family_importance_xgboost.csv",
+    index=False
+)
+
+
+# ============================================================
+# CHANNEL IMPORTANCE
+# ============================================================
+
+rf_channel = (
+    rf.groupby("channel", as_index=False)["importance"]
+    .sum()
+    .sort_values("importance", ascending=False)
+)
+
+xgb_channel = (
+    xgb.groupby("channel", as_index=False)["importance"]
+    .sum()
+    .sort_values("importance", ascending=False)
+)
+
+print("\n" + "-" * 72)
+print("TOP EEG CHANNELS - RANDOM FOREST")
+print("-" * 72)
+
+print(rf_channel.head(15).to_string(index=False))
+
+print("\n" + "-" * 72)
+print("TOP EEG CHANNELS - XGBOOST")
+print("-" * 72)
+
+print(xgb_channel.head(15).to_string(index=False))
+
+
+rf_channel.to_csv(
+    RESULTS_DIR / "channel_importance_random_forest.csv",
+    index=False
+)
+
+xgb_channel.to_csv(
+    RESULTS_DIR / "channel_importance_xgboost.csv",
+    index=False
+)
+
+
+# ============================================================
+# PLOT 1: TOP RANDOM FOREST FEATURES
+# ============================================================
+
+rf_top = rf.head(TOP_N).sort_values("importance")
+
+plt.figure(figsize=(10, 8))
+plt.barh(rf_top["feature"], rf_top["importance"])
+plt.xlabel("Feature Importance")
+plt.ylabel("Feature")
+plt.title("Top 20 Random Forest Features")
+plt.tight_layout()
+
+plt.savefig(
+    FIGURES_DIR / "top20_random_forest_features.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# PLOT 2: TOP XGBOOST FEATURES
+# ============================================================
+
+xgb_top = xgb.head(TOP_N).sort_values("importance")
+
+plt.figure(figsize=(10, 8))
+plt.barh(xgb_top["feature"], xgb_top["importance"])
+plt.xlabel("Feature Importance")
+plt.ylabel("Feature")
+plt.title("Top 20 XGBoost Features")
+plt.tight_layout()
+
+plt.savefig(
+    FIGURES_DIR / "top20_xgboost_features.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# PLOT 3: FEATURE FAMILY COMPARISON
+# ============================================================
+
+families = sorted(
+    set(rf_family["family"]).union(xgb_family["family"])
+)
+
+rf_family_map = dict(zip(rf_family["family"], rf_family["importance"]))
+xgb_family_map = dict(zip(xgb_family["family"], xgb_family["importance"]))
+
+rf_values = [rf_family_map.get(f, 0) for f in families]
+xgb_values = [xgb_family_map.get(f, 0) for f in families]
+
+x = np.arange(len(families))
+width = 0.35
+
+plt.figure(figsize=(10, 6))
+
+plt.bar(
+    x - width / 2,
+    rf_values,
+    width,
+    label="Random Forest"
+)
+
+plt.bar(
+    x + width / 2,
+    xgb_values,
+    width,
+    label="XGBoost"
+)
+
+plt.xticks(x, families)
+plt.xlabel("Feature Family")
+plt.ylabel("Total Importance")
+plt.title("Feature Importance by Feature Family")
+plt.legend()
+plt.tight_layout()
+
+plt.savefig(
+    FIGURES_DIR / "feature_family_importance_comparison.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# PLOT 4: CHANNEL IMPORTANCE
+# ============================================================
+
+TOP_CHANNELS = 15
+
+combined_channels = (
+    pd.concat(
+        [
+            rf_channel.assign(model="Random Forest"),
+            xgb_channel.assign(model="XGBoost"),
+        ],
+        ignore_index=True
+    )
+)
+
+top_channel_names = (
+    combined_channels.groupby("channel")["importance"]
+    .sum()
+    .sort_values(ascending=False)
+    .head(TOP_CHANNELS)
+    .index
+)
+
+plot_channels = combined_channels[
+    combined_channels["channel"].isin(top_channel_names)
+]
+
+pivot = plot_channels.pivot(
+    index="channel",
+    columns="model",
+    values="importance"
+).fillna(0)
+
+pivot = pivot.loc[
+    pivot.sum(axis=1).sort_values().index
+]
+
+plt.figure(figsize=(10, 8))
+
+if "Random Forest" in pivot.columns:
+    plt.barh(
+        np.arange(len(pivot)),
+        pivot["Random Forest"],
+        label="Random Forest"
+    )
+
+if "XGBoost" in pivot.columns:
+    offset = (
+        pivot["Random Forest"].to_numpy()
+        if "Random Forest" in pivot.columns
+        else 0
+    )
+
+    # Keep this plot simple: show XGBoost separately rather than
+    # manufacturing a combined stacked interpretation.
+    plt.close()
+
+    plt.figure(figsize=(10, 8))
+    plt.barh(
+        np.arange(len(pivot)),
+        pivot["XGBoost"],
+        label="XGBoost"
+    )
+    plt.yticks(np.arange(len(pivot)), pivot.index)
+    plt.xlabel("Total Feature Importance")
+    plt.ylabel("EEG Channel")
+    plt.title("Top EEG Channels by XGBoost Importance")
+    plt.tight_layout()
+
+    plt.savefig(
+        FIGURES_DIR / "top15_channel_importance_xgboost.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+# Random Forest channel plot separately
+rf_top_channels = rf_channel.head(TOP_CHANNELS).sort_values("importance")
+
+plt.figure(figsize=(10, 8))
+plt.barh(
+    rf_top_channels["channel"],
+    rf_top_channels["importance"]
+)
+plt.xlabel("Total Feature Importance")
+plt.ylabel("EEG Channel")
+plt.title("Top EEG Channels by Random Forest Importance")
+plt.tight_layout()
+
+plt.savefig(
+    FIGURES_DIR / "top15_channel_importance_random_forest.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# SUMMARY
+# ============================================================
+
+print("\n" + "=" * 72)
+print("FEATURE IMPORTANCE ANALYSIS COMPLETE")
+print("=" * 72)
+
+print(f"\nFigures saved to:")
+print(f"  {FIGURES_DIR}")
+
+print("\nResults saved to:")
+print(f"  {RESULTS_DIR}")
+
+print("\nGenerated figures:")
+for path in sorted(FIGURES_DIR.glob("*feature*.png")):
+    print(f"  {path.name}")
+
+print("\nNo model retraining was performed.")
+print("Existing Random Forest and XGBoost importance results were analyzed.")

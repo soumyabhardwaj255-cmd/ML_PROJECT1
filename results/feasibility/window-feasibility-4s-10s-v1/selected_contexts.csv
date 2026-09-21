@@ -1,0 +1,13 @@
+duration_sec,cohort,patient,file,start_sec,end_sec,label
+4,development,chb01,chb01_03.edf,0.0,4.0,0
+4,development,chb01,chb01_03.edf,3000.0,3004.0,1
+10,development,chb01,chb01_03.edf,0.0,10.0,0
+10,development,chb01,chb01_03.edf,3000.0,3010.0,1
+4,development,chb02,chb02_16+.edf,0.0,4.0,0
+4,development,chb02,chb02_16+.edf,2980.0,2984.0,1
+10,development,chb02,chb02_16+.edf,0.0,10.0,0
+10,development,chb02,chb02_16+.edf,2980.0,2990.0,1
+4,historical_comparator_not_for_tuning,chb08,chb08_21.edf,0.0,4.0,0
+4,historical_comparator_not_for_tuning,chb08,chb08_21.edf,2140.0,2144.0,1
+10,historical_comparator_not_for_tuning,chb08,chb08_21.edf,0.0,10.0,0
+10,historical_comparator_not_for_tuning,chb08,chb08_21.edf,2140.0,2150.0,1

@@ -1,0 +1,17 @@
+{
+  "artifact_hashes": 8,
+  "artifacts": {
+    "context_annotation_audit.csv": "2d59521419bb68cccaf362ed6bf1e071ed43e1d8e90d479c223ff351c3281b32",
+    "feature_ranges.csv": "acc0a979549c16193d2d4d052f6bfa8f9432f832bed63a7edb00ef1a86411aa9",
+    "no_drive_fhn.csv": "79278b3afcbd47acb1efe0f02ff59ca4db1e4084468ba376957804a2e4a43fba",
+    "seed_correlations.csv": "a78968d392575ea28c24fe64abae4e2998cd5825ad8ac860697865ddc8bedd9b",
+    "seed_summary.csv": "c8a080f60c8eef285a9addec4e4e5790059f9b1ceaa8c672a50b096461060a85"
+  },
+  "canonical_columns_exact": true,
+  "dimensions": 334,
+  "imputation_and_model_fitting": "none",
+  "input_manifest_sha256": "6531d72741d11a61d452e59a1d9278ee2add07dc15e3be109a4f185b9c3a98f2",
+  "protected_files": 510,
+  "validated": true,
+  "validator_sha256": "b39435f20a91478b030bbc601d8b342aef7c8b3d723d293b8948aa0f452e2d01"
+}

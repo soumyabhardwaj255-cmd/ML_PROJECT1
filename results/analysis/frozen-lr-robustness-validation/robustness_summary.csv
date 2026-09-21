@@ -1,0 +1,8 @@
+condition,trial,windows,decision_changes,mean_absolute_probability_change,errors,seizure_windows,interpretation
+clean,0,2,0,8.479848767617426e-14,0,1,selected-window robustness; not population performance
+compression_antialiased,0,2,0,0.12434942102458826,0,1,selected-window robustness; not population performance
+compression_legacy_stride,0,2,0,0.006810429348697751,0,1,selected-window robustness; not population performance
+noise_black,0,2,0,0.010302607834543398,0,1,selected-window robustness; not population performance
+noise_pink,0,2,1,0.4955760818801088,1,1,selected-window robustness; not population performance
+noise_white,0,2,1,0.49687928468617215,1,1,selected-window robustness; not population performance
+sr_voltage_referenced,0,2,0,0.46142043760934703,0,1,selected-window robustness; not population performance

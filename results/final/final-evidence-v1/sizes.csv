@@ -1,0 +1,16 @@
+patient,arm,parameters,bundle_bytes,model_payload_bytes,payload_format
+chb01,teacher,,610169,586411,xgboost_ubj
+chb01,selected_supervised,2177.0,24471,11413,torch_state_dict
+chb01,selected_kd,2177.0,24463,11413,torch_state_dict
+chb02,teacher,,625877,602119,xgboost_ubj
+chb02,selected_supervised,2177.0,24519,11413,torch_state_dict
+chb02,selected_kd,2177.0,24511,11413,torch_state_dict
+chb03,teacher,,598881,575123,xgboost_ubj
+chb03,selected_supervised,2177.0,24471,11413,torch_state_dict
+chb03,selected_kd,2177.0,24463,11413,torch_state_dict
+chb05,teacher,,592759,569002,xgboost_ubj
+chb05,selected_supervised,2177.0,24423,11413,torch_state_dict
+chb05,selected_kd,2177.0,24415,11413,torch_state_dict
+chb08,teacher,,525917,502159,xgboost_ubj
+chb08,selected_supervised,2177.0,24471,11413,torch_state_dict
+chb08,selected_kd,2177.0,24463,11413,torch_state_dict

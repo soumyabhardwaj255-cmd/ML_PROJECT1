@@ -1,0 +1,11 @@
+{
+  "bundles": 10,
+  "canonical_baseline_exact_parity": true,
+  "experiment_manifest_sha256": "28f14a7c0f397180f69fb212040a83f73061aab842edf7a63da59e1ccc5cc961",
+  "extraction_manifest_sha256": "f067c06d5ae912cfaa99973891c300cfe453baeafcd8731151713a271e2be376",
+  "inner_folds": 40,
+  "mapping_rows": 39522,
+  "protected_files": 671,
+  "validated": true,
+  "validator_sha256": "bccfb237e29d6615a9e06abbefc42f37cd551e9bf27c6a6b1eb4cde5cfd60eee"
+}

@@ -1,0 +1,638 @@
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import (
+    roc_curve,
+    auc,
+    precision_recall_curve,
+    average_precision_score,
+    confusion_matrix,
+    classification_report,
+    f1_score,
+    precision_score,
+    recall_score,
+    accuracy_score,
+)
+
+
+# ============================================================
+# PATHS
+# ============================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+RESULTS_DIR = PROJECT_ROOT / "data" / "results"
+FIGURES_DIR = PROJECT_ROOT / "data" / "figures"
+
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+
+
+# ============================================================
+# LOAD PREDICTIONS
+# ============================================================
+
+baseline_path = RESULTS_DIR / "ml_predictions.csv"
+tuned_path = RESULTS_DIR / "ml_threshold_predictions.csv"
+
+baseline = pd.read_csv(baseline_path)
+tuned = pd.read_csv(tuned_path)
+
+print("=" * 72)
+print("FINAL PATIENT-INDEPENDENT ML EVALUATION")
+print("=" * 72)
+
+print(f"Baseline predictions: {len(baseline):,}")
+print(f"Tuned predictions:    {len(tuned):,}")
+
+
+# ============================================================
+# IDENTIFY COLUMNS
+# ============================================================
+
+def find_column(df, candidates):
+    for col in candidates:
+        if col in df.columns:
+            return col
+    raise ValueError(
+        f"Could not find any of {candidates}. "
+        f"Available columns: {list(df.columns)}"
+    )
+
+
+def find_probability_column(df):
+    candidates = [
+    "probability_seizure",
+    "probability",
+    "prob",
+    "y_prob",
+    "predicted_probability",
+    "seizure_probability",
+    "prediction_probability",
+]
+
+    return find_column(df, candidates)
+
+
+def find_label_column(df):
+    candidates = [
+        "label",
+        "y_true",
+        "true_label",
+        "target",
+    ]
+
+    return find_column(df, candidates)
+
+
+def find_prediction_column(df):
+    candidates = [
+        "prediction",
+        "predicted_label",
+        "y_pred",
+        "pred",
+    ]
+
+    return find_column(df, candidates)
+
+
+def find_model_column(df):
+    candidates = [
+        "model",
+        "Model",
+    ]
+
+    return find_column(df, candidates)
+
+
+baseline_label_col = find_label_column(baseline)
+baseline_prob_col = find_probability_column(baseline)
+baseline_pred_col = find_prediction_column(baseline)
+baseline_model_col = find_model_column(baseline)
+
+tuned_label_col = find_label_column(tuned)
+tuned_prob_col = find_probability_column(tuned)
+tuned_pred_col = find_prediction_column(tuned)
+tuned_model_col = find_model_column(tuned)
+
+
+# ============================================================
+# STANDARDIZE COLUMN NAMES
+# ============================================================
+
+baseline = baseline.rename(
+    columns={
+        baseline_label_col: "y_true",
+        baseline_prob_col: "y_prob",
+        baseline_pred_col: "y_pred",
+        baseline_model_col: "model",
+    }
+)
+
+tuned = tuned.rename(
+    columns={
+        tuned_label_col: "y_true",
+        tuned_prob_col: "y_prob",
+        tuned_pred_col: "y_pred",
+        tuned_model_col: "model",
+    }
+)
+
+
+# ============================================================
+# NORMALIZE MODEL NAMES
+# ============================================================
+
+def clean_model_name(name):
+    name = str(name).strip()
+
+    mapping = {
+        "LogisticRegression": "Logistic Regression",
+        "Logistic_Regression": "Logistic Regression",
+        "LR": "Logistic Regression",
+        "RandomForest": "Random Forest",
+        "Random_Forest": "Random Forest",
+        "RF": "Random Forest",
+        "XGB": "XGBoost",
+        "XGBClassifier": "XGBoost",
+    }
+
+    return mapping.get(name, name)
+
+
+baseline["model"] = baseline["model"].apply(clean_model_name)
+tuned["model"] = tuned["model"].apply(clean_model_name)
+
+
+# ============================================================
+# BASIC VALIDATION
+# ============================================================
+
+print("\n" + "-" * 72)
+print("DATA VALIDATION")
+print("-" * 72)
+
+print("Baseline labels:")
+print(baseline["y_true"].value_counts().sort_index().to_string())
+
+print("\nTuned labels:")
+print(tuned["y_true"].value_counts().sort_index().to_string())
+
+print("\nBaseline models:")
+print(baseline["model"].value_counts().to_string())
+
+print("\nTuned models:")
+print(tuned["model"].value_counts().to_string())
+
+
+# ============================================================
+# BASELINE METRICS
+# ============================================================
+
+baseline_rows = []
+
+for model_name, group in baseline.groupby("model"):
+
+    y_true = group["y_true"].astype(int).to_numpy()
+    y_prob = group["y_prob"].astype(float).to_numpy()
+    y_pred = group["y_pred"].astype(int).to_numpy()
+
+    precision = precision_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+    recall = recall_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+    f1 = f1_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+    accuracy = accuracy_score(
+        y_true,
+        y_pred
+    )
+
+    baseline_rows.append(
+        {
+            "model": model_name,
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall_sensitivity": recall,
+            "f1": f1,
+        }
+    )
+
+baseline_metrics = pd.DataFrame(baseline_rows)
+
+
+# ============================================================
+# TUNED METRICS
+# ============================================================
+
+tuned_rows = []
+
+for model_name, group in tuned.groupby("model"):
+
+    y_true = group["y_true"].astype(int).to_numpy()
+    y_prob = group["y_prob"].astype(float).to_numpy()
+    y_pred = group["y_pred"].astype(int).to_numpy()
+
+    precision = precision_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+    recall = recall_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+    f1 = f1_score(
+        y_true,
+        y_pred,
+        zero_division=0
+    )
+
+    accuracy = accuracy_score(
+        y_true,
+        y_pred
+    )
+
+    tuned_rows.append(
+        {
+            "model": model_name,
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall_sensitivity": recall,
+            "f1": f1,
+        }
+    )
+
+tuned_metrics = pd.DataFrame(tuned_rows)
+
+
+# ============================================================
+# BASELINE VS TUNED COMPARISON
+# ============================================================
+
+comparison = baseline_metrics.merge(
+    tuned_metrics,
+    on="model",
+    suffixes=("_baseline", "_tuned")
+)
+
+comparison["f1_change"] = (
+    comparison["f1_tuned"]
+    - comparison["f1_baseline"]
+)
+
+comparison["recall_change"] = (
+    comparison["recall_sensitivity_tuned"]
+    - comparison["recall_sensitivity_baseline"]
+)
+
+comparison["precision_change"] = (
+    comparison["precision_tuned"]
+    - comparison["precision_baseline"]
+)
+
+comparison["accuracy_change"] = (
+    comparison["accuracy_tuned"]
+    - comparison["accuracy_baseline"]
+)
+
+print("\n" + "=" * 72)
+print("BASELINE VS THRESHOLD-TUNED RESULTS")
+print("=" * 72)
+
+print(
+    comparison.to_string(
+        index=False,
+        float_format=lambda x: f"{x:.4f}"
+    )
+)
+
+comparison.to_csv(
+    RESULTS_DIR / "ml_baseline_vs_tuned_comparison.csv",
+    index=False
+)
+
+
+# ============================================================
+# ROC CURVES
+# ============================================================
+
+plt.figure(figsize=(9, 7))
+
+for model_name, group in baseline.groupby("model"):
+
+    y_true = group["y_true"].astype(int).to_numpy()
+    y_prob = group["y_prob"].astype(float).to_numpy()
+
+    fpr, tpr, _ = roc_curve(y_true, y_prob)
+    roc_auc = auc(fpr, tpr)
+
+    plt.plot(
+        fpr,
+        tpr,
+        linewidth=2,
+        label=f"{model_name} (AUC = {roc_auc:.3f})"
+    )
+
+plt.plot(
+    [0, 1],
+    [0, 1],
+    linestyle="--",
+    linewidth=1
+)
+
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("Patient-Independent ROC Curves")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.savefig(
+    FIGURES_DIR / "final_roc_curves.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# PRECISION-RECALL CURVES
+# ============================================================
+
+plt.figure(figsize=(9, 7))
+
+for model_name, group in baseline.groupby("model"):
+
+    y_true = group["y_true"].astype(int).to_numpy()
+    y_prob = group["y_prob"].astype(float).to_numpy()
+
+    precision, recall, _ = precision_recall_curve(
+        y_true,
+        y_prob
+    )
+
+    ap = average_precision_score(
+        y_true,
+        y_prob
+    )
+
+    plt.plot(
+        recall,
+        precision,
+        linewidth=2,
+        label=f"{model_name} (AP = {ap:.3f})"
+    )
+
+positive_rate = baseline["y_true"].mean()
+
+plt.axhline(
+    positive_rate,
+    linestyle="--",
+    linewidth=1,
+    label=f"Positive prevalence = {positive_rate:.3f}"
+)
+
+plt.xlabel("Recall / Sensitivity")
+plt.ylabel("Precision")
+plt.title("Patient-Independent Precision–Recall Curves")
+plt.legend()
+plt.grid(alpha=0.25)
+plt.tight_layout()
+
+plt.savefig(
+    FIGURES_DIR / "final_precision_recall_curves.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# TUNED CONFUSION MATRICES
+# ============================================================
+
+for model_name, group in tuned.groupby("model"):
+
+    y_true = group["y_true"].astype(int).to_numpy()
+    y_pred = group["y_pred"].astype(int).to_numpy()
+
+    cm = confusion_matrix(
+        y_true,
+        y_pred,
+        labels=[0, 1]
+    )
+
+    plt.figure(figsize=(6, 5))
+
+    plt.imshow(cm)
+
+    plt.title(
+        f"{model_name} — Threshold-Tuned Confusion Matrix"
+    )
+
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+
+    plt.xticks(
+        [0, 1],
+        ["Non-Seizure", "Seizure"]
+    )
+
+    plt.yticks(
+        [0, 1],
+        ["Non-Seizure", "Seizure"]
+    )
+
+    for i in range(2):
+        for j in range(2):
+            plt.text(
+                j,
+                i,
+                f"{cm[i, j]:,}",
+                ha="center",
+                va="center"
+            )
+
+    plt.colorbar(label="Number of Windows")
+    plt.tight_layout()
+
+    safe_name = (
+        model_name
+        .lower()
+        .replace(" ", "_")
+    )
+
+    plt.savefig(
+        FIGURES_DIR / f"final_tuned_confusion_matrix_{safe_name}.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+
+# ============================================================
+# F1 COMPARISON PLOT
+# ============================================================
+
+plot_models = comparison["model"].tolist()
+
+x = np.arange(len(plot_models))
+width = 0.35
+
+plt.figure(figsize=(9, 6))
+
+plt.bar(
+    x - width / 2,
+    comparison["f1_baseline"],
+    width,
+    label="Baseline"
+)
+
+plt.bar(
+    x + width / 2,
+    comparison["f1_tuned"],
+    width,
+    label="Threshold Tuned"
+)
+
+plt.xticks(
+    x,
+    plot_models
+)
+
+plt.ylabel("F1 Score")
+plt.xlabel("Model")
+plt.title("Baseline vs Threshold-Tuned F1 Score")
+plt.legend()
+plt.grid(
+    axis="y",
+    alpha=0.25
+)
+
+plt.tight_layout()
+
+plt.savefig(
+    FIGURES_DIR / "baseline_vs_tuned_f1.png",
+    dpi=300,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# RECALL / PRECISION COMPARISON
+# ============================================================
+
+metrics_to_plot = [
+    ("recall_sensitivity", "Sensitivity / Recall"),
+    ("precision", "Precision"),
+]
+
+for metric, label in metrics_to_plot:
+
+    plt.figure(figsize=(9, 6))
+
+    plt.bar(
+        x - width / 2,
+        comparison[f"{metric}_baseline"],
+        width,
+        label="Baseline"
+    )
+
+    plt.bar(
+        x + width / 2,
+        comparison[f"{metric}_tuned"],
+        width,
+        label="Threshold Tuned"
+    )
+
+    plt.xticks(
+        x,
+        plot_models
+    )
+
+    plt.ylabel(label)
+    plt.xlabel("Model")
+    plt.title(
+        f"Baseline vs Threshold-Tuned {label}"
+    )
+
+    plt.legend()
+    plt.grid(
+        axis="y",
+        alpha=0.25
+    )
+
+    plt.tight_layout()
+
+    filename = (
+        "baseline_vs_tuned_"
+        + metric
+        + ".png"
+    )
+
+    plt.savefig(
+        FIGURES_DIR / filename,
+        dpi=300,
+        bbox_inches="tight"
+    )
+
+    plt.close()
+
+
+# ============================================================
+# FINAL SUMMARY
+# ============================================================
+
+print("\n" + "=" * 72)
+print("FINAL ML EVALUATION COMPLETE")
+print("=" * 72)
+
+print("\nBaseline metrics:")
+print(
+    baseline_metrics.to_string(
+        index=False,
+        float_format=lambda x: f"{x:.4f}"
+    )
+)
+
+print("\nThreshold-tuned metrics:")
+print(
+    tuned_metrics.to_string(
+        index=False,
+        float_format=lambda x: f"{x:.4f}"
+    )
+)
+
+print("\nGenerated figures:")
+
+for path in sorted(FIGURES_DIR.glob("final_*.png")):
+    print(f"  {path.name}")
+
+for path in sorted(FIGURES_DIR.glob("baseline_vs_tuned_*.png")):
+    print(f"  {path.name}")
+
+print("\nResults saved:")
+print("  ml_baseline_vs_tuned_comparison.csv")

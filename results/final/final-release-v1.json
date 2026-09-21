@@ -1,0 +1,30 @@
+{
+  "canonical_features": 330,
+  "documentation": {
+    "README.md": "76d8348466c85ef7c473e4842f7e52dc37aa1fed38f57951d29f5bc059b0a61b",
+    "research\\consolidate_final_report.py": "9db47ec20e2059f8ba3a4de74defb99aac5e51524359248bffc4cbe0989ccf28",
+    "results\\final\\README-before-final-release-v1.md": "1f7bea5e65279b61198fd72721d6c33842a324133d70450ab9f393ece376e4af"
+  },
+  "final_validation": true,
+  "model_training_this_stage": false,
+  "primary_validation": "passed this stage:20 bundles",
+  "protected_files_verified": 663,
+  "replication_validation": "passed this stage:40 bundles",
+  "report_sha256": "70df8e2be908bc48ef77f4068125c92bdf28583386cfbecba601285f52a0f03f",
+  "sources": {
+    "results\\contribution\\kd-contribution-v1-seed42\\manifest.json": "7012bdffc0e60d810fb556f3cb9dd78b7a0fcc56f25da4064a6c5beec9a8cfde",
+    "results\\contribution\\kd-contribution-v1-seeds43-44\\manifest.json": "b420708c3a8d52e298df6bdc8d7519e6f11408557d1d3cf7d8d0ae6239f1c1f7",
+    "results\\contribution\\kd-contribution-v1-summary\\manifest.json": "2fd320a69aceba736f50db06c97ab07c0e4593e4dbea9aef65a8cdaec7eeda31",
+    "results\\final\\final-evidence-v1\\manifest.json": "e60d8c7d26e41bea2758f6d178445ffc76387ed8cfa9907ce88a6942bb6d154c"
+  },
+  "status": "complete",
+  "student_seeds": [
+    42,
+    43,
+    44
+  ],
+  "supporting_artifact_hashes_verified": true,
+  "test_receipt_sha256": "67fae9322e982ab0f51d21e3684bd8cb6517e471d5f03c3636a36ee544dab581",
+  "tests": "69 passed, exit0; native import diagnostics recorded in report",
+  "validation_source_sha256": "32f68569b19e8a4bfabd51a479164e3dc7c34426bd25ce345e062392237698a9"
+}

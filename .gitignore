@@ -1,6 +1,9 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+*.egg-info/
+results/corrected/**/bundles/
 
 data/
 models/
@@ -15,3 +18,21 @@ models/
 
 .DS_Store
 Thumbs.db
+
+# Large derived feature tables remain local; schemas, hashes, metrics and
+# extraction scripts are versioned. Never replace the frozen local artifacts.
+results/feature_integration/srcr-context-features-v1/extended_centered.csv
+results/feature_integration/srcr-context-features-v1/extended_trailing.csv
+results/feature_integration/sr-mean10-full-v1/extended_features.csv
+results/ablations/psd-representation-v1/matched_relative_features.csv
+results/ablations/psd-representation-v1/notebook_relative_features.csv
+
+# Local credentials and editor/temporary files.
+.env.*
+!.env.example
+*.pem
+*.key
+*.tmp
+*.log
+*.swp
+*.swo

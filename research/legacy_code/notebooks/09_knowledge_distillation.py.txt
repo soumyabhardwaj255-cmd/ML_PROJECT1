@@ -1,0 +1,1351 @@
+"""
+09_knowledge_distillation.py
+
+Feature-Guided Knowledge Distillation for EEG Seizure Detection
+
+Pipeline:
+    1. Load the existing 330-feature EEG feature table.
+    2. Perform patient-independent Leave-One-Patient-Out evaluation.
+    3. Train an XGBoost teacher on the four training patients.
+    4. Use teacher feature importance to select top-K EEG features.
+    5. Train a lightweight neural-network student:
+         - baseline student: hard labels only
+         - KD student: hard labels + teacher soft targets
+    6. Evaluate both students on the completely held-out patient.
+    7. Save metrics, predictions, selected features and presentation figures.
+
+Important:
+    - Feature selection is performed separately inside every LOPO fold.
+    - The held-out patient is never used for feature selection or training.
+    - This is a basic Review-2 implementation of feature-guided KD.
+"""
+
+from pathlib import Path
+import random
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+)
+
+from xgboost import XGBClassifier
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import TensorDataset, DataLoader
+
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+RANDOM_STATE = 42
+
+DATA_PATH = Path("data/processed/feature_table.csv")
+RESULTS_DIR = Path("data/results")
+FIGURES_DIR = Path("data/figures")
+
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+
+PATIENTS = ["chb01", "chb02", "chb03", "chb05", "chb08"]
+
+# Number of teacher-selected features given to the student.
+TOP_K_FEATURES = 50
+
+# XGBoost teacher
+TEACHER_N_ESTIMATORS = 300
+TEACHER_MAX_DEPTH = 5
+TEACHER_LEARNING_RATE = 0.05
+TEACHER_SUBSAMPLE = 0.8
+TEACHER_COLSAMPLE = 0.8
+
+# Student neural network
+STUDENT_HIDDEN_1 = 32
+STUDENT_HIDDEN_2 = 16
+STUDENT_EPOCHS = 40
+STUDENT_BATCH_SIZE = 256
+STUDENT_LEARNING_RATE = 0.001
+STUDENT_WEIGHT_DECAY = 1e-4
+
+# Knowledge distillation
+KD_TEMPERATURE = 3.0
+KD_ALPHA = 0.5
+
+# Same probability threshold for fair initial comparison.
+DECISION_THRESHOLD = 0.50
+
+
+# ============================================================
+# REPRODUCIBILITY
+# ============================================================
+
+def set_seed(seed=RANDOM_STATE):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+set_seed()
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+print("=" * 70)
+print("FEATURE-GUIDED KNOWLEDGE DISTILLATION")
+print("=" * 70)
+print(f"PyTorch device: {DEVICE}")
+print(f"Top-K guided features: {TOP_K_FEATURES}")
+print(f"KD temperature: {KD_TEMPERATURE}")
+print(f"KD alpha: {KD_ALPHA}")
+print(f"Decision threshold: {DECISION_THRESHOLD}")
+print()
+
+
+# ============================================================
+# LOAD DATA
+# ============================================================
+
+if not DATA_PATH.exists():
+    raise FileNotFoundError(
+        f"Feature table not found: {DATA_PATH}\n"
+        "Run the existing feature extraction pipeline first."
+    )
+
+df = pd.read_csv(DATA_PATH)
+
+required_columns = {"patient", "label"}
+
+missing_required = required_columns - set(df.columns)
+
+if missing_required:
+    raise ValueError(
+        f"Missing required columns: {sorted(missing_required)}"
+    )
+
+metadata_columns = {
+    "patient",
+    "file",
+    "start_sec",
+    "end_sec",
+    "label",
+}
+
+feature_columns = [
+    c for c in df.columns
+    if c not in metadata_columns
+]
+
+print("DATASET")
+print("-" * 70)
+print(f"Samples: {len(df):,}")
+print(f"Features: {len(feature_columns)}")
+print(f"Patients: {df['patient'].nunique()}")
+print(f"Seizure samples: {(df['label'] == 1).sum():,}")
+print(f"Non-seizure samples: {(df['label'] == 0).sum():,}")
+print()
+
+
+X_all = df[feature_columns].astype(np.float32)
+y_all = df["label"].astype(int)
+
+
+# ============================================================
+# XGBOOST TEACHER
+# ============================================================
+
+def make_teacher(y_train):
+    positive = int((y_train == 1).sum())
+    negative = int((y_train == 0).sum())
+
+    if positive == 0:
+        raise ValueError("Training fold contains no seizure samples.")
+
+    scale_pos_weight = negative / positive
+
+    model = XGBClassifier(
+        n_estimators=TEACHER_N_ESTIMATORS,
+        max_depth=TEACHER_MAX_DEPTH,
+        learning_rate=TEACHER_LEARNING_RATE,
+        subsample=TEACHER_SUBSAMPLE,
+        colsample_bytree=TEACHER_COLSAMPLE,
+        scale_pos_weight=scale_pos_weight,
+        objective="binary:logistic",
+        eval_metric="logloss",
+        tree_method="hist",
+        random_state=RANDOM_STATE,
+        n_jobs=-1,
+    )
+
+    return model
+
+
+# ============================================================
+# STUDENT MODEL
+# ============================================================
+
+class LightweightStudent(nn.Module):
+    """
+    Small MLP student model.
+
+    Input:
+        Top-K teacher-selected EEG features
+
+    Output:
+        One seizure logit
+    """
+
+    def __init__(self, input_dim):
+        super().__init__()
+
+        self.network = nn.Sequential(
+            nn.Linear(input_dim, STUDENT_HIDDEN_1),
+            nn.ReLU(),
+            nn.Linear(STUDENT_HIDDEN_1, STUDENT_HIDDEN_2),
+            nn.ReLU(),
+            nn.Linear(STUDENT_HIDDEN_2, 1),
+        )
+
+    def forward(self, x):
+        return self.network(x).squeeze(1)
+
+
+# ============================================================
+# FEATURE SCALING
+# ============================================================
+
+def fit_standard_scaler(X_train):
+    mean = X_train.mean(axis=0)
+    std = X_train.std(axis=0)
+
+    std = np.where(std < 1e-8, 1.0, std)
+
+    return mean, std
+
+
+def apply_standard_scaler(X, mean, std):
+    return (X - mean) / std
+
+
+# ============================================================
+# TEACHER FEATURE GUIDANCE
+# ============================================================
+
+def select_top_features(teacher, feature_names, k):
+    importances = teacher.feature_importances_
+
+    ranking = (
+        pd.DataFrame({
+            "feature": feature_names,
+            "importance": importances,
+        })
+        .sort_values("importance", ascending=False)
+        .reset_index(drop=True)
+    )
+
+    selected = ranking.head(min(k, len(ranking))).copy()
+
+    return selected
+
+
+# ============================================================
+# TEACHER PROBABILITY → SOFT TARGET
+# ============================================================
+
+def probability_to_logit(probability):
+    probability = np.clip(probability, 1e-6, 1 - 1e-6)
+    return np.log(probability / (1.0 - probability))
+
+
+def teacher_soft_targets(teacher_probability, temperature):
+    """
+    Convert teacher probabilities into temperature-softened
+    binary probabilities.
+
+    Higher temperature produces softer teacher targets.
+    """
+
+    teacher_logits = probability_to_logit(teacher_probability)
+
+    softened = 1.0 / (
+        1.0 + np.exp(-teacher_logits / temperature)
+    )
+
+    return softened.astype(np.float32)
+
+
+# ============================================================
+# TRAIN STUDENT
+# ============================================================
+
+def train_student(
+    X_train,
+    y_train,
+    teacher_probability=None,
+    use_kd=False,
+):
+    """
+    Train either:
+
+    1. Ordinary lightweight student:
+       hard-label BCE only
+
+    2. KD student:
+       alpha * hard BCE
+       +
+       (1-alpha) * temperature-scaled soft-target loss
+    """
+
+    X_tensor = torch.tensor(
+        X_train,
+        dtype=torch.float32,
+    )
+
+    y_tensor = torch.tensor(
+        y_train.astype(np.float32),
+        dtype=torch.float32,
+    )
+
+    dataset = TensorDataset(
+        X_tensor,
+        y_tensor,
+    )
+
+    loader = DataLoader(
+        dataset,
+        batch_size=STUDENT_BATCH_SIZE,
+        shuffle=True,
+        drop_last=False,
+    )
+
+    model = LightweightStudent(
+        input_dim=X_train.shape[1]
+    ).to(DEVICE)
+
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=STUDENT_LEARNING_RATE,
+        weight_decay=STUDENT_WEIGHT_DECAY,
+    )
+
+    positive = float((y_train == 1).sum())
+    negative = float((y_train == 0).sum())
+
+    if positive > 0:
+        pos_weight_value = negative / positive
+    else:
+        pos_weight_value = 1.0
+
+    pos_weight = torch.tensor(
+        [pos_weight_value],
+        dtype=torch.float32,
+        device=DEVICE,
+    )
+
+    hard_loss_function = nn.BCEWithLogitsLoss(
+        pos_weight=pos_weight
+    )
+
+    if use_kd:
+        if teacher_probability is None:
+            raise ValueError(
+                "Teacher probabilities are required for KD training."
+            )
+
+        soft_targets = teacher_soft_targets(
+            teacher_probability,
+            KD_TEMPERATURE,
+        )
+
+        soft_tensor = torch.tensor(
+            soft_targets,
+            dtype=torch.float32,
+        )
+
+        dataset = TensorDataset(
+            X_tensor,
+            y_tensor,
+            soft_tensor,
+        )
+
+        loader = DataLoader(
+            dataset,
+            batch_size=STUDENT_BATCH_SIZE,
+            shuffle=True,
+            drop_last=False,
+        )
+
+    model.train()
+
+    for epoch in range(STUDENT_EPOCHS):
+
+        epoch_loss = 0.0
+
+        for batch in loader:
+
+            optimizer.zero_grad()
+
+            if use_kd:
+                xb, yb, teacher_soft = batch
+
+                xb = xb.to(DEVICE)
+                yb = yb.to(DEVICE)
+                teacher_soft = teacher_soft.to(DEVICE)
+
+                student_logits = model(xb)
+
+                hard_loss = hard_loss_function(
+                    student_logits,
+                    yb,
+                )
+
+                student_soft_logits = (
+                    student_logits / KD_TEMPERATURE
+                )
+
+                kd_loss = F.binary_cross_entropy_with_logits(
+                    student_soft_logits,
+                    teacher_soft,
+                )
+
+                kd_loss = (
+                    kd_loss
+                    * (KD_TEMPERATURE ** 2)
+                )
+
+                loss = (
+                    KD_ALPHA * hard_loss
+                    +
+                    (1.0 - KD_ALPHA) * kd_loss
+                )
+
+            else:
+
+                xb, yb = batch
+
+                xb = xb.to(DEVICE)
+                yb = yb.to(DEVICE)
+
+                student_logits = model(xb)
+
+                loss = hard_loss_function(
+                    student_logits,
+                    yb,
+                )
+
+            loss.backward()
+            optimizer.step()
+
+            epoch_loss += loss.item()
+
+        if (
+            epoch == 0
+            or epoch == STUDENT_EPOCHS - 1
+        ):
+            print(
+                f"      Epoch {epoch + 1:02d}/"
+                f"{STUDENT_EPOCHS} "
+                f"loss={epoch_loss / len(loader):.4f}"
+            )
+
+    return model
+
+
+# ============================================================
+# STUDENT PREDICTION
+# ============================================================
+
+def predict_student(model, X):
+    model.eval()
+
+    X_tensor = torch.tensor(
+        X,
+        dtype=torch.float32,
+    ).to(DEVICE)
+
+    with torch.no_grad():
+        logits = model(X_tensor)
+        probability = torch.sigmoid(logits)
+
+    return probability.cpu().numpy()
+
+
+# ============================================================
+# METRICS
+# ============================================================
+
+def calculate_metrics(y_true, probability):
+    prediction = (
+        probability >= DECISION_THRESHOLD
+    ).astype(int)
+
+    metrics = {
+        "accuracy": accuracy_score(
+            y_true,
+            prediction,
+        ),
+        "precision": precision_score(
+            y_true,
+            prediction,
+            zero_division=0,
+        ),
+        "recall_sensitivity": recall_score(
+            y_true,
+            prediction,
+            zero_division=0,
+        ),
+        "f1": f1_score(
+            y_true,
+            prediction,
+            zero_division=0,
+        ),
+    }
+
+    if len(np.unique(y_true)) == 2:
+        metrics["roc_auc"] = roc_auc_score(
+            y_true,
+            probability,
+        )
+    else:
+        metrics["roc_auc"] = np.nan
+
+    return metrics, prediction
+
+
+# ============================================================
+# PARAMETER COUNT
+# ============================================================
+
+def count_parameters(model):
+    return sum(
+        p.numel()
+        for p in model.parameters()
+        if p.requires_grad
+    )
+
+
+# ============================================================
+# LOPO EVALUATION
+# ============================================================
+
+all_predictions = []
+metrics_rows = []
+feature_rows = []
+model_rows = []
+
+print("=" * 70)
+print("PATIENT-INDEPENDENT KNOWLEDGE DISTILLATION")
+print("=" * 70)
+
+for held_out_patient in PATIENTS:
+
+    print()
+    print("=" * 70)
+    print(f"HELD-OUT PATIENT: {held_out_patient}")
+    print("=" * 70)
+
+    train_mask = (
+        df["patient"] != held_out_patient
+    )
+
+    test_mask = (
+        df["patient"] == held_out_patient
+    )
+
+    X_train_full = X_all.loc[train_mask].to_numpy(
+        dtype=np.float32
+    )
+
+    y_train = y_all.loc[train_mask].to_numpy(
+        dtype=int
+    )
+
+    X_test_full = X_all.loc[test_mask].to_numpy(
+        dtype=np.float32
+    )
+
+    y_test = y_all.loc[test_mask].to_numpy(
+        dtype=int
+    )
+
+    test_metadata = df.loc[
+        test_mask,
+        [
+            "patient",
+            "file",
+            "start_sec",
+            "end_sec",
+            "label",
+        ],
+    ].copy()
+
+    print(
+        f"Training samples: {len(y_train):,}"
+    )
+
+    print(
+        f"Testing samples: {len(y_test):,}"
+    )
+
+    print(
+        f"Training seizure samples: "
+        f"{(y_train == 1).sum():,}"
+    )
+
+    print(
+        f"Testing seizure samples: "
+        f"{(y_test == 1).sum():,}"
+    )
+
+    # --------------------------------------------------------
+    # STEP 1: TRAIN TEACHER
+    # --------------------------------------------------------
+
+    print()
+    print("  [1/5] Training XGBoost teacher...")
+
+    teacher = make_teacher(y_train)
+
+    teacher.fit(
+        X_train_full,
+        y_train,
+    )
+
+    teacher_train_probability = teacher.predict_proba(
+        X_train_full
+    )[:, 1]
+
+    teacher_test_probability = teacher.predict_proba(
+        X_test_full
+    )[:, 1]
+
+    teacher_metrics, teacher_prediction = (
+        calculate_metrics(
+            y_test,
+            teacher_test_probability,
+        )
+    )
+
+    print(
+        f"      Teacher F1: "
+        f"{teacher_metrics['f1']:.4f}"
+    )
+
+    print(
+        f"      Teacher ROC-AUC: "
+        f"{teacher_metrics['roc_auc']:.4f}"
+    )
+
+    # --------------------------------------------------------
+    # STEP 2: FEATURE GUIDANCE
+    # --------------------------------------------------------
+
+    print()
+    print("  [2/5] Selecting teacher-guided features...")
+
+    selected_features = select_top_features(
+        teacher,
+        feature_columns,
+        TOP_K_FEATURES,
+    )
+
+    selected_names = (
+        selected_features["feature"]
+        .tolist()
+    )
+
+    selected_indices = [
+        feature_columns.index(name)
+        for name in selected_names
+    ]
+
+    X_train = X_train_full[:, selected_indices]
+    X_test = X_test_full[:, selected_indices]
+
+    print(
+        f"      Selected {len(selected_names)} "
+        f"of {len(feature_columns)} features."
+    )
+
+    print("      Top 5:")
+
+    for _, row in selected_features.head(5).iterrows():
+        print(
+            f"        {row['feature']} "
+            f"({row['importance']:.6f})"
+        )
+
+    selected_features = selected_features.copy()
+
+    selected_features.insert(
+        0,
+        "held_out_patient",
+        held_out_patient,
+    )
+
+    selected_features["rank"] = (
+        np.arange(len(selected_features)) + 1
+    )
+
+    feature_rows.append(
+        selected_features
+    )
+
+    # --------------------------------------------------------
+    # STEP 3: SCALE SELECTED FEATURES
+    # --------------------------------------------------------
+
+    print()
+    print("  [3/5] Scaling selected features...")
+
+    scaler_mean, scaler_std = (
+        fit_standard_scaler(X_train)
+    )
+
+    X_train_scaled = apply_standard_scaler(
+        X_train,
+        scaler_mean,
+        scaler_std,
+    ).astype(np.float32)
+
+    X_test_scaled = apply_standard_scaler(
+        X_test,
+        scaler_mean,
+        scaler_std,
+    ).astype(np.float32)
+
+    # --------------------------------------------------------
+    # STEP 4: TRAIN ORDINARY STUDENT
+    # --------------------------------------------------------
+
+    print()
+    print("  [4/5] Training lightweight student WITHOUT KD...")
+
+    student_baseline = train_student(
+        X_train_scaled,
+        y_train,
+        use_kd=False,
+    )
+
+    baseline_test_probability = predict_student(
+        student_baseline,
+        X_test_scaled,
+    )
+
+    baseline_metrics, baseline_prediction = (
+        calculate_metrics(
+            y_test,
+            baseline_test_probability,
+        )
+    )
+
+    print(
+        f"      Student baseline F1: "
+        f"{baseline_metrics['f1']:.4f}"
+    )
+
+    print(
+        f"      Student baseline ROC-AUC: "
+        f"{baseline_metrics['roc_auc']:.4f}"
+    )
+
+    # --------------------------------------------------------
+    # STEP 5: TRAIN KD STUDENT
+    # --------------------------------------------------------
+
+    print()
+    print("  [5/5] Training lightweight student WITH KD...")
+
+    student_kd = train_student(
+        X_train_scaled,
+        y_train,
+        teacher_probability=teacher_train_probability,
+        use_kd=True,
+    )
+
+    kd_test_probability = predict_student(
+        student_kd,
+        X_test_scaled,
+    )
+
+    kd_metrics, kd_prediction = (
+        calculate_metrics(
+            y_test,
+            kd_test_probability,
+        )
+    )
+
+    print(
+        f"      KD student F1: "
+        f"{kd_metrics['f1']:.4f}"
+    )
+
+    print(
+        f"      KD student ROC-AUC: "
+        f"{kd_metrics['roc_auc']:.4f}"
+    )
+
+    # --------------------------------------------------------
+    # PARAMETER COUNT
+    # --------------------------------------------------------
+
+    baseline_parameters = count_parameters(
+        student_baseline
+    )
+
+    kd_parameters = count_parameters(
+        student_kd
+    )
+
+    print()
+    print("  MODEL COMPLEXITY")
+    print(
+        f"      Student input features: "
+        f"{len(selected_names)}"
+    )
+
+    print(
+        f"      Student parameters: "
+        f"{kd_parameters:,}"
+    )
+
+    # --------------------------------------------------------
+    # SAVE METRICS
+    # --------------------------------------------------------
+
+    models = [
+        (
+            "XGBoost Teacher",
+            teacher_metrics,
+        ),
+        (
+            "Student Baseline",
+            baseline_metrics,
+        ),
+        (
+            "KD Student",
+            kd_metrics,
+        ),
+    ]
+
+    for model_name, metrics in models:
+
+        metrics_rows.append({
+            "held_out_patient": held_out_patient,
+            "model": model_name,
+            "accuracy": metrics["accuracy"],
+            "precision": metrics["precision"],
+            "recall_sensitivity": metrics[
+                "recall_sensitivity"
+            ],
+            "f1": metrics["f1"],
+            "roc_auc": metrics["roc_auc"],
+            "decision_threshold": DECISION_THRESHOLD,
+            "top_k_features": len(selected_names),
+        })
+
+    model_rows.append({
+        "held_out_patient": held_out_patient,
+        "teacher_features": len(feature_columns),
+        "student_features": len(selected_names),
+        "student_parameters": kd_parameters,
+        "kd_temperature": KD_TEMPERATURE,
+        "kd_alpha": KD_ALPHA,
+        "student_epochs": STUDENT_EPOCHS,
+        "device": str(DEVICE),
+    })
+
+    # --------------------------------------------------------
+    # SAVE TEST PREDICTIONS
+    # --------------------------------------------------------
+
+    prediction_frame = test_metadata.reset_index(
+        drop=True
+    ).copy()
+
+    prediction_frame[
+        "teacher_probability"
+    ] = teacher_test_probability
+
+    prediction_frame[
+        "student_baseline_probability"
+    ] = baseline_test_probability
+
+    prediction_frame[
+        "kd_student_probability"
+    ] = kd_test_probability
+
+    prediction_frame[
+        "student_baseline_prediction"
+    ] = baseline_prediction
+
+    prediction_frame[
+        "kd_student_prediction"
+    ] = kd_prediction
+
+    all_predictions.append(
+        prediction_frame
+    )
+
+
+# ============================================================
+# COMBINE RESULTS
+# ============================================================
+
+metrics_df = pd.DataFrame(metrics_rows)
+
+predictions_df = pd.concat(
+    all_predictions,
+    ignore_index=True,
+)
+
+features_df = pd.concat(
+    feature_rows,
+    ignore_index=True,
+)
+
+model_df = pd.DataFrame(model_rows)
+
+
+# ============================================================
+# POOLED RESULTS
+# ============================================================
+
+print()
+print("=" * 70)
+print("POOLED PATIENT-INDEPENDENT RESULTS")
+print("=" * 70)
+
+pooled_rows = []
+
+y_pooled = predictions_df["label"].to_numpy()
+
+probability_columns = {
+    "XGBoost Teacher":
+        "teacher_probability",
+
+    "Student Baseline":
+        "student_baseline_probability",
+
+    "KD Student":
+        "kd_student_probability",
+}
+
+for model_name, probability_column in (
+    probability_columns.items()
+):
+
+    probability = predictions_df[
+        probability_column
+    ].to_numpy()
+
+    pooled_metrics, pooled_prediction = (
+        calculate_metrics(
+            y_pooled,
+            probability,
+        )
+    )
+
+    pooled_rows.append({
+        "model": model_name,
+        "accuracy": pooled_metrics["accuracy"],
+        "precision": pooled_metrics["precision"],
+        "recall_sensitivity":
+            pooled_metrics[
+                "recall_sensitivity"
+            ],
+        "f1": pooled_metrics["f1"],
+        "roc_auc": pooled_metrics["roc_auc"],
+    })
+
+    print()
+    print(model_name)
+    print(
+        f"  Accuracy:    "
+        f"{pooled_metrics['accuracy']:.4f}"
+    )
+    print(
+        f"  Precision:   "
+        f"{pooled_metrics['precision']:.4f}"
+    )
+    print(
+        f"  Sensitivity: "
+        f"{pooled_metrics['recall_sensitivity']:.4f}"
+    )
+    print(
+        f"  F1:          "
+        f"{pooled_metrics['f1']:.4f}"
+    )
+    print(
+        f"  ROC-AUC:     "
+        f"{pooled_metrics['roc_auc']:.4f}"
+    )
+
+pooled_df = pd.DataFrame(pooled_rows)
+
+
+# ============================================================
+# MEAN LOPO RESULTS
+# ============================================================
+
+mean_lopo = (
+    metrics_df
+    .groupby("model")[
+        [
+            "accuracy",
+            "precision",
+            "recall_sensitivity",
+            "f1",
+            "roc_auc",
+        ]
+    ]
+    .mean()
+    .reset_index()
+)
+
+print()
+print("=" * 70)
+print("MEAN PATIENT-LEVEL LOPO RESULTS")
+print("=" * 70)
+
+print(
+    mean_lopo.to_string(
+        index=False,
+        float_format=lambda x: f"{x:.4f}",
+    )
+)
+
+
+# ============================================================
+# CONFUSION MATRICES
+# ============================================================
+
+for model_name, probability_column in (
+    probability_columns.items()
+):
+
+    probability = predictions_df[
+        probability_column
+    ].to_numpy()
+
+    prediction = (
+        probability >= DECISION_THRESHOLD
+    ).astype(int)
+
+    cm = confusion_matrix(
+        y_pooled,
+        prediction,
+        labels=[0, 1],
+    )
+
+    fig, ax = plt.subplots(
+        figsize=(6, 5)
+    )
+
+    image = ax.imshow(cm)
+
+    ax.set_title(
+        f"{model_name}\n"
+        f"Pooled Patient-Independent Confusion Matrix"
+    )
+
+    ax.set_xlabel(
+        "Predicted Label"
+    )
+
+    ax.set_ylabel(
+        "True Label"
+    )
+
+    ax.set_xticks([0, 1])
+    ax.set_yticks([0, 1])
+
+    ax.set_xticklabels(
+        ["Non-Seizure", "Seizure"]
+    )
+
+    ax.set_yticklabels(
+        ["Non-Seizure", "Seizure"]
+    )
+
+    for i in range(2):
+        for j in range(2):
+            ax.text(
+                j,
+                i,
+                f"{cm[i, j]:,}",
+                ha="center",
+                va="center",
+            )
+
+    fig.colorbar(image, ax=ax)
+
+    filename = (
+        model_name
+        .lower()
+        .replace(" ", "_")
+        .replace("-", "")
+    )
+
+    fig.tight_layout()
+
+    fig.savefig(
+        FIGURES_DIR
+        / f"kd_confusion_matrix_{filename}.png",
+        dpi=200,
+        bbox_inches="tight",
+    )
+
+    plt.close(fig)
+
+
+# ============================================================
+# MODEL COMPARISON FIGURE
+# ============================================================
+
+plot_metrics = [
+    "precision",
+    "recall_sensitivity",
+    "f1",
+    "roc_auc",
+]
+
+plot_labels = [
+    "Precision",
+    "Sensitivity",
+    "F1-score",
+    "ROC-AUC",
+]
+
+model_order = [
+    "XGBoost Teacher",
+    "Student Baseline",
+    "KD Student",
+]
+
+plot_df = pooled_df.set_index(
+    "model"
+).loc[model_order]
+
+x = np.arange(len(plot_labels))
+width = 0.25
+
+fig, ax = plt.subplots(
+    figsize=(10, 6)
+)
+
+for i, model_name in enumerate(model_order):
+
+    values = [
+        plot_df.loc[
+            model_name,
+            metric
+        ]
+        for metric in plot_metrics
+    ]
+
+    ax.bar(
+        x + (i - 1) * width,
+        values,
+        width,
+        label=model_name,
+    )
+
+ax.set_xticks(x)
+ax.set_xticklabels(plot_labels)
+
+ax.set_ylim(0, 1.05)
+
+ax.set_ylabel("Score")
+
+ax.set_title(
+    "Teacher vs Lightweight Student vs Knowledge-Distilled Student"
+)
+
+ax.legend()
+
+for container in ax.containers:
+    ax.bar_label(
+        container,
+        fmt="%.3f",
+        padding=2,
+        fontsize=8,
+    )
+
+fig.tight_layout()
+
+fig.savefig(
+    FIGURES_DIR
+    / "kd_model_comparison.png",
+    dpi=200,
+    bbox_inches="tight",
+)
+
+plt.close(fig)
+
+
+# ============================================================
+# FEATURE GUIDANCE FIGURE
+# ============================================================
+
+# Aggregate teacher importance across LOPO folds.
+# Since each fold can select a different top-K set,
+# average importance over the folds where the feature appears.
+
+feature_guidance = (
+    features_df
+    .groupby("feature", as_index=False)
+    .agg(
+        mean_importance=("importance", "mean"),
+        folds_selected=("importance", "count"),
+    )
+    .sort_values(
+        "mean_importance",
+        ascending=False,
+    )
+    .head(15)
+)
+
+fig, ax = plt.subplots(
+    figsize=(10, 7)
+)
+
+feature_guidance_plot = (
+    feature_guidance
+    .sort_values("mean_importance")
+)
+
+ax.barh(
+    feature_guidance_plot["feature"],
+    feature_guidance_plot["mean_importance"],
+)
+
+ax.set_xlabel(
+    "Mean Teacher Feature Importance"
+)
+
+ax.set_ylabel(
+    "EEG Feature"
+)
+
+ax.set_title(
+    "Top Teacher-Guided EEG Features for Knowledge Distillation"
+)
+
+fig.tight_layout()
+
+fig.savefig(
+    FIGURES_DIR
+    / "kd_feature_guidance.png",
+    dpi=200,
+    bbox_inches="tight",
+)
+
+plt.close(fig)
+
+
+# ============================================================
+# SAVE CSV RESULTS
+# ============================================================
+
+metrics_df.to_csv(
+    RESULTS_DIR
+    / "kd_metrics_by_patient.csv",
+    index=False,
+)
+
+pooled_df.to_csv(
+    RESULTS_DIR
+    / "kd_pooled_metrics.csv",
+    index=False,
+)
+
+mean_lopo.to_csv(
+    RESULTS_DIR
+    / "kd_mean_lopo_metrics.csv",
+    index=False,
+)
+
+predictions_df.to_csv(
+    RESULTS_DIR
+    / "kd_predictions.csv",
+    index=False,
+)
+
+features_df.to_csv(
+    RESULTS_DIR
+    / "kd_feature_selection.csv",
+    index=False,
+)
+
+model_df.to_csv(
+    RESULTS_DIR
+    / "kd_model_summary.csv",
+    index=False,
+)
+
+
+# ============================================================
+# FINAL SUMMARY
+# ============================================================
+
+print()
+print("=" * 70)
+print("KNOWLEDGE DISTILLATION COMPLETE")
+print("=" * 70)
+
+print()
+print("Generated result files:")
+print(
+    "  data/results/kd_metrics_by_patient.csv"
+)
+print(
+    "  data/results/kd_pooled_metrics.csv"
+)
+print(
+    "  data/results/kd_mean_lopo_metrics.csv"
+)
+print(
+    "  data/results/kd_predictions.csv"
+)
+print(
+    "  data/results/kd_feature_selection.csv"
+)
+print(
+    "  data/results/kd_model_summary.csv"
+)
+
+print()
+print("Generated figures:")
+print(
+    "  data/figures/kd_model_comparison.png"
+)
+print(
+    "  data/figures/kd_feature_guidance.png"
+)
+print(
+    "  data/figures/kd_confusion_matrix_*.png"
+)
+
+print()
+print("Pooled comparison:")
+print(
+    pooled_df.to_string(
+        index=False,
+        float_format=lambda x: f"{x:.4f}",
+    )
+)
+
+print()
+print("Done.")

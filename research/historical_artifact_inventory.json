@@ -1,0 +1,476 @@
+[
+  {
+    "path": "data/figures/baseline_vs_tuned_f1.png",
+    "bytes": 89579,
+    "sha256": "18bb67d9f321a66cccd66971cecd36fc1c0458163d2c3ddb44fb6126664768dc",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/baseline_vs_tuned_precision.png",
+    "bytes": 85250,
+    "sha256": "7dc3a27a6ecfdab10ce9818bcdd8404350caeac9c63b02cff3ca28ad7f328797",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/baseline_vs_tuned_recall_sensitivity.png",
+    "bytes": 91170,
+    "sha256": "cebc8c9211ed200cab6f02c75c0ca69d6f6ffda746ffa16344d837daa0fcf062",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/feature_family_importance_comparison.png",
+    "bytes": 82032,
+    "sha256": "92a7e88abc219c2e98994a5a6c4b36b6ebefb89050ec070006d0beefe79d7edb",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/final_precision_recall_curves.png",
+    "bytes": 244965,
+    "sha256": "5fd9058514359180b57fc2828630e8ec2a41d4bcf8fd565d35467c0d7c156960",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/final_roc_curves.png",
+    "bytes": 211357,
+    "sha256": "5fa2cdf07c21c08370acf596d43e5ec31f51353f7420d3b452ad5997b081759d",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/final_tuned_confusion_matrix_logistic_regression.png",
+    "bytes": 94057,
+    "sha256": "575347a433621fb1e8c452e7ab8d764610c9786ff246a528b54c2c328efa20d4",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/final_tuned_confusion_matrix_random_forest.png",
+    "bytes": 93846,
+    "sha256": "970b102b4e7f3f55c91e0eeb8bd920656d78d3e360538c617d1361fb6453526d",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/final_tuned_confusion_matrix_xgboost.png",
+    "bytes": 93561,
+    "sha256": "2e3a722f81e1d90179cd666f63aa2c558e3858ec3ec8658943f5157752e9e408",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/kd_confusion_matrix_kd_student.png",
+    "bytes": 54594,
+    "sha256": "ca4f83dce790afd753ce7f5b3096d48eb7ce1a40a05c28e42d9aba86d40b9e77",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/kd_confusion_matrix_student_baseline.png",
+    "bytes": 54932,
+    "sha256": "addd1e00c9c9806f076c6346b3fb5c745e7b6eafa62ea6b40710fb4781f6d720",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/kd_confusion_matrix_xgboost_teacher.png",
+    "bytes": 56418,
+    "sha256": "a48f55e1dff761b6dbdf90aa9f4f16450afaf3871195169965b0f267a8417607",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/kd_feature_guidance.png",
+    "bytes": 103726,
+    "sha256": "0e43348ef639752294f1c86434817e27da312c841a8dcfef7dfe36a91e7cfe96",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/kd_mean_lopo_model_comparison.png",
+    "bytes": 69596,
+    "sha256": "39a9286e4f74662be238136b0511d3d98bfe040472a96a849bf7d026d742c0ba",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/kd_model_comparison.png",
+    "bytes": 70192,
+    "sha256": "f7fdbf65793b79d256d9a94c08de38199a6399e8dab007c92043f3adf9e8a8cc",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/ml_demo_chb08_21_detection_timeline.png",
+    "bytes": 429302,
+    "sha256": "1cff02044a806ff6f413a6fb554ce2894d4b925dfb00cd434af6642556108fb5",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/top15_channel_importance_random_forest.png",
+    "bytes": 111567,
+    "sha256": "b0cc4fabbb76210e572b75169e67423e547b66198a7151e41f03e5eb4641cdc4",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/top15_channel_importance_xgboost.png",
+    "bytes": 104943,
+    "sha256": "add064df6b9386dd44769c4e09c3d4b221eef4650d9d7e259666f55d646351fc",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/top20_random_forest_features.png",
+    "bytes": 185438,
+    "sha256": "31ba43458db0dcf33022816945b9ae86eee291a862ac88d033a763a81d5457bd",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/figures/top20_xgboost_features.png",
+    "bytes": 200379,
+    "sha256": "ed093f571102476426728d40b67a369ab31c2c4286a6887f269cde7f659b28f8",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/channel_importance_random_forest.csv",
+    "bytes": 622,
+    "sha256": "51e5163ca03070c0de2846ca753f463eb1ff2d7efe5ea82f2c259745793e4430",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/channel_importance_xgboost.csv",
+    "bytes": 508,
+    "sha256": "ba81be80b59bb25bba98a2984e36a21ecd782d131a8189e73b3166d66ba5a4d9",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/confusion_matrix_logistic_regression.png",
+    "bytes": 41390,
+    "sha256": "72f82b77c5d5ca4b8fd417ec113d7a3aba824512fd9755217efb8d121c6a6cc2",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/confusion_matrix_random_forest.png",
+    "bytes": 40111,
+    "sha256": "09596c88aea392a1d3ce9ed4f3f76356718b602e04ac8872ac7e67e5fb10363b",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/confusion_matrix_xgboost.png",
+    "bytes": 39337,
+    "sha256": "b408d9de415ee243402c0f1197e3d35b64d1a46a1bf0f8668a0eafaae3d47e8f",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/feature_family_importance_random_forest.csv",
+    "bytes": 128,
+    "sha256": "5dee366988792928ff924caa9c0d8470440465088aee9194eba8c72592ef18e0",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/feature_family_importance_xgboost.csv",
+    "bytes": 111,
+    "sha256": "1f8d669a1ede423839c00763d7969031cddb9af4a17fb60afa3f43b85aa1af5e",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/feature_importance_random_forest.csv",
+    "bytes": 12519,
+    "sha256": "d6e64d44f37ec3161fcd918c3a5aec101eeb0ee8eb483d2d424164413d81d18c",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/feature_importance_xgboost.csv",
+    "bytes": 11568,
+    "sha256": "126379ec6a4dabc9f8726df1aea78833c00df25c2e2444e1df480695a00c7c61",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/kd_feature_selection.csv",
+    "bytes": 10708,
+    "sha256": "8c727aa54ab64a5a31a885193bad214ee66465271d412088327a7f0c55908071",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/kd_mean_lopo_metrics.csv",
+    "bytes": 391,
+    "sha256": "3bc51464c64abd7f0b234ec69c7f95e1685e1ad15f44d3c66bc5d342c2c4dd01",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/kd_metrics_by_patient.csv",
+    "bytes": 1906,
+    "sha256": "a932d2e07b729b0644963ff45ba65a7c7f5235fea423eedaf9bef343ce1c590f",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/kd_model_summary.csv",
+    "bytes": 287,
+    "sha256": "44a351cdd231815987e20df61cf06f83b3b86572fac9f5314ecf7054a57f8946",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/kd_pooled_metrics.csv",
+    "bytes": 393,
+    "sha256": "0cd40fb27724251980e206de982ddb04fbaa7b8366b9b44244e5b3400943b792",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/kd_predictions.csv",
+    "bytes": 3120716,
+    "sha256": "96dde407271b45e2c8f29ab0055611c55334d72bd831a682cf3c618125e70cc3",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_baseline_vs_tuned_comparison.csv",
+    "bytes": 940,
+    "sha256": "89662ea720867fe02cce34f45c9a083fc61f6e051772a1fa1a93a366807543af",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_demo_chb08_21_detection_events.csv",
+    "bytes": 794,
+    "sha256": "f5d67671c272c5aec841aad09d857a816ee0e7081f1247cf190bb59b3c694101",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_demo_chb08_21_predictions.csv",
+    "bytes": 53289,
+    "sha256": "f974bf457dc02e2f949019744125b93466f3f261fe60f8dface567c7dfb5c061",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_demo_chb08_21_summary.csv",
+    "bytes": 415,
+    "sha256": "36630d0f3031bf809f574462e6f24ab22ca3ed6f44ff1733ad6f28bdfc54e6df",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_metrics_by_patient.csv",
+    "bytes": 1874,
+    "sha256": "1a9aca08a0a3f1c14f4ea60229cdac6f241f317bf492a1351004f42fc6c516b4",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_model_summary.csv",
+    "bytes": 623,
+    "sha256": "c6a09fdc563de343f99f128307bbec82d6fb3f2a48905ae1b565cea348ec581e",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_predictions.csv",
+    "bytes": 8337154,
+    "sha256": "52d20f6fc9525249e5ab5314c099cfa2bdf4ebc83c799ba51603b87d1c4486c5",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_selected_thresholds.csv",
+    "bytes": 944,
+    "sha256": "5f4caa24b28e7fc33155658aebea081c66a9835bca5d2ce7684423d12508d38e",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_threshold_metrics_by_patient.csv",
+    "bytes": 2434,
+    "sha256": "4e8b81d56a0ea52b8b004ba8fd63d28e7118738566f22887a7882e485276f9ef",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_threshold_model_summary.csv",
+    "bytes": 480,
+    "sha256": "a940b5d085ce5d0429f4543b373a440cf9b320a83cebbec28e571ab9d26b6bb2",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/ml_threshold_predictions.csv",
+    "bytes": 10529331,
+    "sha256": "86af41a741b5d0bfc99c84c9fe9b63406ba5745f8df8ee339c32cda38218d76b",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/top20_features_random_forest.csv",
+    "bytes": 793,
+    "sha256": "be7530b8ef8f64a4ff25c99f9f21ccfec5f1f244cbe349d25c550ee5ee65e36d",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "data/results/top20_features_xgboost.csv",
+    "bytes": 692,
+    "sha256": "55fe53af384f4df79c9610e735f1571db652ee2f204d5c584a259b1e5346d34d",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "notebooks/cr_coherence_resonance_results.csv",
+    "bytes": 5507,
+    "sha256": "6f92aabed51ac1313380169c8f0c62adf98f08597f58571650c09bc34af8af76",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "notebooks/cr_final_coherence_resonance_results.csv",
+    "bytes": 9590,
+    "sha256": "c8ee79a6082d0b04d4066c8559974f722fa743237d6593c1f509128cd091a30f",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "notebooks/CR_FINAL_PRESENTATION.png",
+    "bytes": 295493,
+    "sha256": "f11cf7affcb252f424aac83f44306466a327abaa8981b63a061742832c94684c",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "notebooks/cr_final_presentation_results.csv",
+    "bytes": 9021,
+    "sha256": "ea9e7b6b00dc5d43be02dab8c362d2803bc9d4c5f362586d1a7a6931d5dc1f44",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "notebooks/cr_final_robust_results.csv",
+    "bytes": 8788,
+    "sha256": "76162bd3daf7b7b157aa5c5fefeea2764e16a25151d6fc757200b6fd2b806b04",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "notebooks/sr_calibrated_dense_results.csv",
+    "bytes": 9615,
+    "sha256": "8e17e0193f87a1e5977f340d679f39ba1db5fabb4c71cc04683e8bd08080850a",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "notebooks/sr_final_dense_results.csv",
+    "bytes": 21118,
+    "sha256": "c782402a6497cf29b65e59a366d58f91d2182b2f1a69c4ca35047f0c85559555",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "notebooks/sr_final_results.csv",
+    "bytes": 26309,
+    "sha256": "2a1a5cbcd867e8de84842ea72d2c626fab3e8ad23a5ea9dc8f27107fb83c41e9",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/class_imbalance.png",
+    "bytes": 40767,
+    "sha256": "46e78f64ce65de05fae6e23bbc37c6c17fae08fa1bebae2e83f23438118a547f",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/day1_full_recording.png",
+    "bytes": 253723,
+    "sha256": "4f33a96a42a66a0881a2a68113f38ae9e7fc3eb5179410f92ba1b7427e7c4d62",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/day1_seizure_zoom.png",
+    "bytes": 450525,
+    "sha256": "3be93f9a1bb00558de70a1d5b5dfaebb0353d4c106f158b50ec342b35784665f",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/experiment_a_model_comparison.png",
+    "bytes": 43105,
+    "sha256": "fe85332c7e7b1f0cca08e17b5f07083678d1e3d174faa1cb6f26665202b4e832",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/experiment_b_feature_ablation.png",
+    "bytes": 55545,
+    "sha256": "c5b5f7d92d15de401498c3fbd535c69a97558756e3f992496271b817dae93e97",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/experiment_c_generalization_gap_summary.png",
+    "bytes": 41628,
+    "sha256": "ba89f4860973802d5628a43c8c0b4665ff5e342d8de0cab9997dc3fc9078d5e2",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/experiment_c_lopo_before_after.png",
+    "bytes": 53171,
+    "sha256": "0206d732007ab49da04938ab4cc4b3951b77a432e9fa8a2a22d57fb436a9b4f2",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/final_model_confusion_matrix.png",
+    "bytes": 42260,
+    "sha256": "acc865f115b6606f218763f66b12f6289eba83c7804bcbe30e92aa05b00bc8c7",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/figures/final_model_roc_curve.png",
+    "bytes": 61150,
+    "sha256": "905f0ed1f39f4ac74ce7443080ea0dff64a5ed40a79edb67416f657063f1a9ae",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/day4_baseline_results.csv",
+    "bytes": 121,
+    "sha256": "aea39287c90dea3778b5d80d2e928c94cb5e02738c9425af9ff0468c7cbc64d1",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_a_model_comparison.csv",
+    "bytes": 243,
+    "sha256": "bcc6fa56cb251a35dff7bd53dda92b6c087a6d11a6594b9a2750fbe301091814",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_a_table.md",
+    "bytes": 288,
+    "sha256": "344da1f6eeb19b5be905e92cbb4873dab4b227db6c8b2bba7d7cbc2d7c1e313d",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_b_feature_ablation.csv",
+    "bytes": 352,
+    "sha256": "b0dcf4e51dd94eaed07e7b7a9c0e22455a175bd999b9ffd3f86e9b5f5d6b94e1",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_b_table.md",
+    "bytes": 418,
+    "sha256": "2a3ee5652dd74409483083c3e1fddfcef9dda6587312d2adf9c494b578292239",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_generalization_gap.csv",
+    "bytes": 256,
+    "sha256": "f417dcf7c20bb81f91ee5a0f79f21a3e2963c487b5d3a1a5370225968c705b5b",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_lopo_per_patient.csv",
+    "bytes": 333,
+    "sha256": "002839c1c4a7deb2219c6a3d587bafff2698f29b329a49bbae9c6f98195e03ef",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_lopo_tuned_table.md",
+    "bytes": 488,
+    "sha256": "048674a9b93909c62a8bce613368640b44824af66132677325863473fcf2b597",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_lopo_untuned_table.md",
+    "bytes": 488,
+    "sha256": "18a50985478f199f0b43d1d862304fd3c7f133acbab2d7eb37fb511f1c1371c3",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_patient_dependent_repeats.csv",
+    "bytes": 299,
+    "sha256": "54da4e6b659f6c565397e26bda40095f483e08a12e8fba2fdc606e95d1bfe1c9",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_summary_table.md",
+    "bytes": 314,
+    "sha256": "0091242d6c9bafa4c407d07b7580a6221c3b73832a5161667c31f8113bfc54fd",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_tuned_dependent_repeats.csv",
+    "bytes": 324,
+    "sha256": "0d8122df41779540469e5664d7031d1fc559e48535e2287f3cb27b3a7bfba122",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_tuned_lopo_per_patient.csv",
+    "bytes": 373,
+    "sha256": "c4042103734cc25e172d1f5a951cec22ed472cb578b8704ee45bc9031d17a97a",
+    "status": "historical / not corrected final results"
+  },
+  {
+    "path": "results/tables/experiment_c_tuned_summary.csv",
+    "bytes": 169,
+    "sha256": "5efb102096faacb9617a0a816eea0e9237286bad68b581ff91eb9697e11b647c",
+    "status": "historical / not corrected final results"
+  }
+]

@@ -40,6 +40,11 @@ def parse_summary_file(summary_path):
         starts = [int(x) for x in re.findall(r"Seizure(?:\s*\d*)?\s*Start Time:\s*(\d+)", block)]
         ends = [int(x) for x in re.findall(r"Seizure(?:\s*\d*)?\s*End Time:\s*(\d+)", block)]
 
+        count = re.search(r"Number of Seizures in File:\s*(\d+)", block)
+        if count is None or len(starts) != len(ends) or len(starts) != int(count.group(1)):
+            raise ValueError(f"Incomplete seizure annotations for {fname}")
+        if fname in seizure_info:
+            raise ValueError(f"Duplicate annotation entry for {fname}")
         seizure_info[fname] = list(zip(starts, ends))
 
     return seizure_info

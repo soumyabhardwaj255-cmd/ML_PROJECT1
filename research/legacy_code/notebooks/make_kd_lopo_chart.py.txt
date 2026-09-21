@@ -1,0 +1,66 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+df = pd.read_csv("data/results/kd_mean_lopo_metrics.csv")
+
+model_order = [
+    "XGBoost Teacher",
+    "Student Baseline",
+    "KD Student",
+]
+
+metrics = [
+    "precision",
+    "recall_sensitivity",
+    "f1",
+    "roc_auc",
+]
+
+labels = [
+    "Precision",
+    "Sensitivity",
+    "F1-score",
+    "ROC-AUC",
+]
+
+df = df.set_index("model").loc[model_order]
+
+x = np.arange(len(labels))
+width = 0.25
+
+fig, ax = plt.subplots(figsize=(10, 6))
+
+for i, model in enumerate(model_order):
+    values = [df.loc[model, metric] for metric in metrics]
+
+    bars = ax.bar(
+        x + (i - 1) * width,
+        values,
+        width,
+        label=model,
+    )
+
+    ax.bar_label(
+        bars,
+        fmt="%.3f",
+        padding=2,
+        fontsize=8,
+    )
+
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.set_ylim(0, 1.05)
+ax.set_ylabel("Score")
+ax.set_title("Mean Patient-Level LOPO Metrics")
+ax.legend()
+
+fig.tight_layout()
+
+plt.savefig(
+    "data/figures/kd_mean_lopo_model_comparison.png",
+    dpi=200,
+    bbox_inches="tight",
+)
+
+plt.show()

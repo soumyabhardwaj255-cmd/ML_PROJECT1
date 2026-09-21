@@ -1,0 +1,5 @@
+mode,label,windows,full_context,sr_valid,cr_valid,joint_valid,bistable_valid,bistable_events,fhn_events
+centered,0,38892,38803,38803,38803,38803,0,0.0,510627.0
+centered,1,630,630,630,630,630,0,0.0,8371.0
+trailing,0,38892,38802,38802,38802,38802,0,0.0,510547.0
+trailing,1,630,630,630,630,630,0,0.0,8392.0

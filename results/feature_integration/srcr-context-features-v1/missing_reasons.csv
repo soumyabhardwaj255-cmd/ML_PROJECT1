@@ -1,0 +1,8 @@
+mode,label,context_reason,sr_reason,cr_reason,windows
+centered,0,ok,ok,ok,38803
+centered,0,recording_end,recording_end,recording_end,44
+centered,0,recording_start,recording_start,recording_start,45
+centered,1,ok,ok,ok,630
+trailing,0,ok,ok,ok,38802
+trailing,0,recording_start,recording_start,recording_start,90
+trailing,1,ok,ok,ok,630

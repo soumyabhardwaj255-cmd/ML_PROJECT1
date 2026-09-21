@@ -1,0 +1,3 @@
+patient,file,start_sec,end_sec,label
+chb08,chb08_21.edf,0.0,4.0,0
+chb08,chb08_21.edf,2140.0,2144.0,1

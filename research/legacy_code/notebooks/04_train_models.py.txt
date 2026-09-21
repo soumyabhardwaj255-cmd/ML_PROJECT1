@@ -1,0 +1,338 @@
+"""
+ML stage: patient-independent seizure classification on the CHB-MIT subset.
+
+Input:
+    data/processed/feature_table.csv
+
+Evaluation:
+    Leave-One-Patient-Out (LOPO):
+      - one complete patient is held out for testing
+      - remaining four patients are used for training
+      - repeated for all five patients
+
+Models:
+    - Logistic Regression
+    - Random Forest
+    - XGBoost
+
+Outputs:
+    data/results/ml_metrics_by_patient.csv
+    data/results/ml_model_summary.csv
+    data/results/ml_predictions.csv
+    data/results/feature_importance_random_forest.csv
+    data/results/feature_importance_xgboost.csv
+    data/results/confusion_matrix_<model>.png
+"""
+
+from pathlib import Path
+import warnings
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.exceptions import UndefinedMetricWarning
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+)
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+
+from xgboost import XGBClassifier
+
+
+warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
+
+ROOT = Path(__file__).resolve().parents[1]
+DATA_PATH = ROOT / "data" / "processed" / "feature_table.csv"
+RESULTS_DIR = ROOT / "data" / "results"
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+META_COLUMNS = ["patient", "file", "start_sec", "end_sec", "label"]
+PATIENTS = ["chb01", "chb02", "chb03", "chb05", "chb08"]
+RANDOM_STATE = 42
+
+
+def make_models(scale_pos_weight: float):
+    """Create fresh models for one LOPO fold."""
+    return {
+        "Logistic Regression": Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("model", LogisticRegression(
+                class_weight="balanced",
+                max_iter=2000,
+                solver="liblinear",
+                random_state=RANDOM_STATE,
+            )),
+        ]),
+        "Random Forest": Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("model", RandomForestClassifier(
+                n_estimators=300,
+                class_weight="balanced_subsample",
+                random_state=RANDOM_STATE,
+                n_jobs=-1,
+                max_features="sqrt",
+                min_samples_leaf=2,
+            )),
+        ]),
+        "XGBoost": Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("model", XGBClassifier(
+                n_estimators=300,
+                max_depth=5,
+                learning_rate=0.05,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                objective="binary:logistic",
+                eval_metric="logloss",
+                scale_pos_weight=scale_pos_weight,
+                random_state=RANDOM_STATE,
+                n_jobs=-1,
+                tree_method="hist",
+            )),
+        ]),
+    }
+
+
+def metrics_for(y_true, y_pred, y_score):
+    """Calculate metrics while remaining robust to single-class folds."""
+    out = {
+        "accuracy": accuracy_score(y_true, y_pred),
+        "precision": precision_score(y_true, y_pred, zero_division=0),
+        "recall_sensitivity": recall_score(y_true, y_pred, zero_division=0),
+        "f1": f1_score(y_true, y_pred, zero_division=0),
+    }
+
+    if len(np.unique(y_true)) == 2:
+        out["roc_auc"] = roc_auc_score(y_true, y_score)
+    else:
+        out["roc_auc"] = np.nan
+
+    return out
+
+
+def main():
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(f"Feature table not found: {DATA_PATH}")
+
+    df = pd.read_csv(DATA_PATH)
+
+    missing = [c for c in META_COLUMNS if c not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+
+    feature_columns = [c for c in df.columns if c not in META_COLUMNS]
+    if len(feature_columns) != 330:
+        raise ValueError(
+            f"Expected 330 feature columns, found {len(feature_columns)}"
+        )
+
+    if df["label"].isna().any():
+        raise ValueError("Label column contains missing values.")
+
+    if set(df["patient"].unique()) != set(PATIENTS):
+        raise ValueError(
+            f"Unexpected patient set: {sorted(df['patient'].unique())}"
+        )
+
+    X = df[feature_columns].copy()
+    y = df["label"].astype(int).copy()
+    groups = df["patient"].copy()
+
+    print("=" * 72)
+    print("PATIENT-INDEPENDENT EEG SEIZURE CLASSIFICATION")
+    print("=" * 72)
+    print(f"Samples:       {len(df):,}")
+    print(f"Features:      {len(feature_columns)}")
+    print(f"Patients:      {', '.join(PATIENTS)}")
+    print(f"Seizure:       {(y == 1).sum():,}")
+    print(f"Non-seizure:   {(y == 0).sum():,}")
+    print("\nUsing Leave-One-Patient-Out evaluation.")
+    print("No patient appears in both training and test data for a fold.")
+
+    all_metrics = []
+    all_predictions = []
+    importance_store = {name: [] for name in ["Random Forest", "XGBoost"]}
+
+    for test_patient in PATIENTS:
+        train_mask = groups != test_patient
+        test_mask = groups == test_patient
+
+        X_train = X.loc[train_mask]
+        X_test = X.loc[test_mask]
+        y_train = y.loc[train_mask]
+        y_test = y.loc[test_mask]
+
+        train_pos = int((y_train == 1).sum())
+        train_neg = int((y_train == 0).sum())
+
+        if train_pos == 0:
+            raise ValueError(
+                f"Training fold for {test_patient} contains no seizure samples."
+            )
+
+        scale_pos_weight = train_neg / train_pos
+        models = make_models(scale_pos_weight)
+
+        print("\n" + "-" * 72)
+        print(f"TEST PATIENT: {test_patient}")
+        print(
+            f"Train: {len(y_train):,} windows "
+            f"({train_pos:,} seizure / {train_neg:,} non-seizure)"
+        )
+        print(
+            f"Test:  {len(y_test):,} windows "
+            f"({(y_test == 1).sum():,} seizure / {(y_test == 0).sum():,} non-seizure)"
+        )
+
+        for model_name, model in models.items():
+            print(f"  Training {model_name}...", end=" ", flush=True)
+            model.fit(X_train, y_train)
+
+            y_pred = model.predict(X_test)
+            y_score = model.predict_proba(X_test)[:, 1]
+
+            fold_metrics = metrics_for(y_test, y_pred, y_score)
+            fold_metrics.update({
+                "model": model_name,
+                "test_patient": test_patient,
+                "test_samples": len(y_test),
+                "test_seizure_samples": int((y_test == 1).sum()),
+            })
+            all_metrics.append(fold_metrics)
+
+            fold_predictions = df.loc[test_mask, META_COLUMNS].copy()
+            fold_predictions["model"] = model_name
+            fold_predictions["prediction"] = y_pred.astype(int)
+            fold_predictions["probability_seizure"] = y_score
+            all_predictions.append(fold_predictions)
+
+            if model_name in importance_store:
+                fitted_model = model.named_steps["model"]
+                importance_store[model_name].append(
+                    fitted_model.feature_importances_
+                )
+
+            print(
+                f"F1={fold_metrics['f1']:.4f}, "
+                f"Recall={fold_metrics['recall_sensitivity']:.4f}, "
+                f"ROC-AUC={fold_metrics['roc_auc']:.4f}"
+                if not np.isnan(fold_metrics["roc_auc"])
+                else
+                f"F1={fold_metrics['f1']:.4f}, "
+                f"Recall={fold_metrics['recall_sensitivity']:.4f}, "
+                f"ROC-AUC=N/A"
+            )
+
+    metrics_df = pd.DataFrame(all_metrics)
+    predictions_df = pd.concat(all_predictions, ignore_index=True)
+
+    metrics_df.to_csv(
+        RESULTS_DIR / "ml_metrics_by_patient.csv", index=False
+    )
+    predictions_df.to_csv(
+        RESULTS_DIR / "ml_predictions.csv", index=False
+    )
+
+    summary_rows = []
+    for model_name, model_df in metrics_df.groupby("model"):
+        summary_rows.append({
+            "model": model_name,
+            "accuracy_mean": model_df["accuracy"].mean(),
+            "accuracy_std": model_df["accuracy"].std(ddof=1),
+            "precision_mean": model_df["precision"].mean(),
+            "recall_sensitivity_mean": model_df["recall_sensitivity"].mean(),
+            "f1_mean": model_df["f1"].mean(),
+            "f1_std": model_df["f1"].std(ddof=1),
+            "roc_auc_mean": model_df["roc_auc"].mean(),
+            "roc_auc_std": model_df["roc_auc"].std(ddof=1),
+        })
+
+    summary_df = pd.DataFrame(summary_rows).sort_values(
+        "f1_mean", ascending=False
+    )
+    summary_df.to_csv(
+        RESULTS_DIR / "ml_model_summary.csv", index=False
+    )
+
+    # Aggregate feature importance across the five held-out-patient folds.
+    for model_name, fold_importances in importance_store.items():
+        if not fold_importances:
+            continue
+
+        importance = np.mean(np.vstack(fold_importances), axis=0)
+        imp_df = pd.DataFrame({
+            "feature": feature_columns,
+            "importance": importance,
+        }).sort_values("importance", ascending=False)
+
+        filename = (
+            "feature_importance_random_forest.csv"
+            if model_name == "Random Forest"
+            else "feature_importance_xgboost.csv"
+        )
+        imp_df.to_csv(RESULTS_DIR / filename, index=False)
+
+    # Aggregate confusion matrices across all patient folds.
+    for model_name in predictions_df["model"].unique():
+        pred = predictions_df[predictions_df["model"] == model_name]
+        cm = confusion_matrix(pred["label"], pred["prediction"], labels=[0, 1])
+
+        fig, ax = plt.subplots(figsize=(5.5, 4.5))
+        im = ax.imshow(cm)
+        ax.set_xticks([0, 1])
+        ax.set_yticks([0, 1])
+        ax.set_xticklabels(["Non-seizure", "Seizure"])
+        ax.set_yticklabels(["Non-seizure", "Seizure"])
+        ax.set_xlabel("Predicted label")
+        ax.set_ylabel("True label")
+        ax.set_title(f"{model_name} — Patient-Independent Confusion Matrix")
+
+        for i in range(2):
+            for j in range(2):
+                ax.text(j, i, f"{cm[i, j]:,}", ha="center", va="center")
+
+        fig.tight_layout()
+        safe_name = model_name.lower().replace(" ", "_")
+        fig.savefig(
+            RESULTS_DIR / f"confusion_matrix_{safe_name}.png",
+            dpi=200,
+            bbox_inches="tight",
+        )
+        plt.close(fig)
+
+    print("\n" + "=" * 72)
+    print("FINAL PATIENT-INDEPENDENT RESULTS")
+    print("=" * 72)
+
+    display_cols = [
+        "model",
+        "accuracy_mean",
+        "precision_mean",
+        "recall_sensitivity_mean",
+        "f1_mean",
+        "roc_auc_mean",
+    ]
+    print(summary_df[display_cols].to_string(index=False, float_format=lambda x: f"{x:.4f}"))
+
+    print("\nSaved:")
+    print(f"  {RESULTS_DIR / 'ml_metrics_by_patient.csv'}")
+    print(f"  {RESULTS_DIR / 'ml_model_summary.csv'}")
+    print(f"  {RESULTS_DIR / 'ml_predictions.csv'}")
+    print(f"  {RESULTS_DIR / 'feature_importance_random_forest.csv'}")
+    print(f"  {RESULTS_DIR / 'feature_importance_xgboost.csv'}")
+    print(f"  {RESULTS_DIR / 'confusion_matrix_<model>.png'}")
+
+
+if __name__ == "__main__":
+    main()

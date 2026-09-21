@@ -1,0 +1,24 @@
+[
+  {
+    "loss": [
+      0.7301912428340793,
+      0.3047682052568686
+    ],
+    "model": "student_baseline",
+    "parameters": 2177,
+    "seconds": 2.345564299990656,
+    "seed": 42,
+    "test_patient": "chb08"
+  },
+  {
+    "loss": [
+      2.6005065659872133,
+      1.1030573881545838
+    ],
+    "model": "kd_student",
+    "parameters": 2177,
+    "seconds": 0.4731467999808956,
+    "seed": 42,
+    "test_patient": "chb08"
+  }
+]

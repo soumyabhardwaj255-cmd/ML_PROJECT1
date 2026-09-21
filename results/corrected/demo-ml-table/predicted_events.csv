@@ -1,0 +1,14 @@
+patient,file,start_sec,end_sec,windows,sustained
+chb08,chb08_21.edf,2092.0,2144.0,13,True
+chb08,chb08_21.edf,2152.0,2184.0,8,True
+chb08,chb08_21.edf,2192.0,2208.0,4,True
+chb08,chb08_21.edf,2224.0,2236.0,3,True
+chb08,chb08_21.edf,2300.0,2304.0,1,False
+chb08,chb08_21.edf,2308.0,2312.0,1,False
+chb08,chb08_21.edf,2316.0,2320.0,1,False
+chb08,chb08_21.edf,2380.0,2388.0,2,True
+chb08,chb08_21.edf,2444.0,2448.0,1,False
+chb08,chb08_21.edf,2480.0,2484.0,1,False
+chb08,chb08_21.edf,2868.0,2872.0,1,False
+chb08,chb08_21.edf,3132.0,3136.0,1,False
+chb08,chb08_21.edf,3572.0,3576.0,1,False

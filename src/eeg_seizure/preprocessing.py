@@ -3,9 +3,10 @@ Signal cleaning: restrict to the common channel set, remove power-line
 interference, and band-limit to the frequency range where seizure-relevant
 EEG activity lives.
 """
+from .config import PREPROCESS
 
 
-def preprocess_raw(raw, channels, l_freq=1.0, h_freq=40.0, notch_freq=60.0):
+def preprocess_raw(raw, channels, l_freq=PREPROCESS["l_freq"], h_freq=PREPROCESS["h_freq"], notch_freq=PREPROCESS["notch_freq"]):
     """
     Return a filtered copy of `raw` restricted to `channels`.
 

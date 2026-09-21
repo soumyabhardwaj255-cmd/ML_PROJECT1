@@ -1,0 +1,97 @@
+patient,file,start_sec,end_sec,label,model,drive,substeps,metric,noise_intensity,value,status,valid_trials,interpretation
+chb01,chb01_03.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,1,coherence_median,2.0,1.2833537733581977,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,1,snr_mean,0.0,9.987829738241324,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,2,coherence_median,2.0,1.0420355160784358,boundary_maximum,2.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,2,snr_mean,0.0,9.98783066670718,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,1,coherence_median,2.0,1.2833537733581977,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,1,snr_mean,0.1,2.7740825444400024,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,2,coherence_median,2.0,1.0420355160784358,boundary_maximum,2.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,2,snr_mean,0.5,-1.6345796160183739,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,fhn_sde,eeg_component,1,coherence_median,0.1,4.751757631882539,interior_grid_maximum,1.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,fhn_sde,eeg_component,1,snr_mean,0.0,9.9956607259383,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,fhn_sde,eeg_component,2,coherence_median,2.0,2.8341444614209026,boundary_maximum,2.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,fhn_sde,eeg_component,2,snr_mean,0.0,9.99563450553232,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,fhn_sde,no_external_drive,1,coherence_median,0.1,4.751757631882539,interior_grid_maximum,1.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,fhn_sde,no_external_drive,1,snr_mean,0.1,4.127403770142437,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,fhn_sde,no_external_drive,2,coherence_median,2.0,4.538169463434905,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,0.0,4.0,0,fhn_sde,no_external_drive,2,snr_mean,0.0,-1.0966146032436788,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,bistable_driven_regularity,eeg_component,1,coherence_median,,,no_valid_measurement,,
+chb01,chb01_03.edf,3000.0,3004.0,1,bistable_driven_regularity,eeg_component,1,snr_mean,0.0,12.591317526953837,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,bistable_driven_regularity,eeg_component,2,coherence_median,2.0,2.6364947765949567,boundary_maximum,1.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,bistable_driven_regularity,eeg_component,2,snr_mean,0.0,12.59120979559282,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,bistable_driven_regularity,no_external_drive,1,coherence_median,,,no_valid_measurement,,
+chb01,chb01_03.edf,3000.0,3004.0,1,bistable_driven_regularity,no_external_drive,1,snr_mean,0.5,-3.9547820113940575,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,bistable_driven_regularity,no_external_drive,2,coherence_median,2.0,2.6433596668467367,boundary_maximum,1.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,bistable_driven_regularity,no_external_drive,2,snr_mean,0.5,-6.268792334074949,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,fhn_sde,eeg_component,1,coherence_median,0.1,6.274064801660337,interior_grid_maximum,2.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,fhn_sde,eeg_component,1,snr_mean,0.0,12.4153279563708,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,fhn_sde,eeg_component,2,coherence_median,2.0,1.9894433450888918,boundary_maximum,2.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,fhn_sde,eeg_component,2,snr_mean,0.0,12.415926576033193,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,fhn_sde,no_external_drive,1,coherence_median,0.1,11.000921356766863,interior_grid_maximum,2.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,fhn_sde,no_external_drive,1,snr_mean,2.0,-2.55749932247096,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,fhn_sde,no_external_drive,2,coherence_median,2.0,1.9456357771803436,boundary_maximum,2.0,descriptive only; not a resonance claim
+chb01,chb01_03.edf,3000.0,3004.0,1,fhn_sde,no_external_drive,2,snr_mean,2.0,-9.807751143288362,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,1,coherence_median,,,no_valid_measurement,,
+chb02,chb02_16+.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,1,snr_mean,0.0,14.25681675413738,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,2,coherence_median,,,no_valid_measurement,,
+chb02,chb02_16+.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,2,snr_mean,0.0,14.256813962561537,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,1,coherence_median,,,no_valid_measurement,,
+chb02,chb02_16+.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,1,snr_mean,0.1,-1.9429506276325779,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,2,coherence_median,,,no_valid_measurement,,
+chb02,chb02_16+.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,2,snr_mean,0.1,0.8150251389337888,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,fhn_sde,eeg_component,1,coherence_median,0.0,136.47160876900367,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,fhn_sde,eeg_component,1,snr_mean,0.0,14.251319268590715,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,fhn_sde,eeg_component,2,coherence_median,0.0,136.47160876900367,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,fhn_sde,eeg_component,2,snr_mean,0.0,14.251311191348881,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,fhn_sde,no_external_drive,1,coherence_median,2.0,5.119018144178146,boundary_maximum,2.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,fhn_sde,no_external_drive,1,snr_mean,0.0,-0.5670379183563145,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,fhn_sde,no_external_drive,2,coherence_median,0.5,2.606012132693108,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,0.0,4.0,0,fhn_sde,no_external_drive,2,snr_mean,0.0,-0.5670378174600146,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,bistable_driven_regularity,eeg_component,1,coherence_median,2.0,1.624193601881135,boundary_maximum,1.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,bistable_driven_regularity,eeg_component,1,snr_mean,0.0,10.035410993206469,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,bistable_driven_regularity,eeg_component,2,coherence_median,,,no_valid_measurement,,
+chb02,chb02_16+.edf,2980.0,2984.0,1,bistable_driven_regularity,eeg_component,2,snr_mean,0.0,10.03532802336873,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,bistable_driven_regularity,no_external_drive,1,coherence_median,2.0,1.6222833881546683,boundary_maximum,1.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,bistable_driven_regularity,no_external_drive,1,snr_mean,2.0,-5.789602037954315,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,bistable_driven_regularity,no_external_drive,2,coherence_median,,,no_valid_measurement,,
+chb02,chb02_16+.edf,2980.0,2984.0,1,bistable_driven_regularity,no_external_drive,2,snr_mean,0.1,-6.128315617917703,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,fhn_sde,eeg_component,1,coherence_median,0.5,4.752967965660509,interior_grid_maximum,2.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,fhn_sde,eeg_component,1,snr_mean,0.0,8.818120088256101,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,fhn_sde,eeg_component,2,coherence_median,0.5,2.1393219897352176,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,fhn_sde,eeg_component,2,snr_mean,0.0,8.81809890201549,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,fhn_sde,no_external_drive,1,coherence_median,0.5,4.752967965660509,interior_grid_maximum,2.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,fhn_sde,no_external_drive,1,snr_mean,2.0,-10.416881173904796,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,fhn_sde,no_external_drive,2,coherence_median,0.5,2.1393219897352176,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb02,chb02_16+.edf,2980.0,2984.0,1,fhn_sde,no_external_drive,2,snr_mean,0.5,-10.396656281765983,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,1,coherence_median,,,no_valid_measurement,,
+chb08,chb08_21.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,1,snr_mean,0.0,11.46455637153226,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,2,coherence_median,,,no_valid_measurement,,
+chb08,chb08_21.edf,0.0,4.0,0,bistable_driven_regularity,eeg_component,2,snr_mean,0.0,11.463562777230038,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,1,coherence_median,,,no_valid_measurement,,
+chb08,chb08_21.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,1,snr_mean,0.1,-8.17274320549833,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,2,coherence_median,,,no_valid_measurement,,
+chb08,chb08_21.edf,0.0,4.0,0,bistable_driven_regularity,no_external_drive,2,snr_mean,2.0,-10.49698300237979,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,fhn_sde,eeg_component,1,coherence_median,0.5,1.8406316770857982,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,fhn_sde,eeg_component,1,snr_mean,0.0,3.4226136789093218,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,fhn_sde,eeg_component,2,coherence_median,0.1,3.5303934866622706,interior_grid_maximum,2.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,fhn_sde,eeg_component,2,snr_mean,0.0,3.4206884850213775,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,fhn_sde,no_external_drive,1,coherence_median,0.5,1.788701090873217,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,fhn_sde,no_external_drive,1,snr_mean,2.0,-4.434166612778191,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,fhn_sde,no_external_drive,2,coherence_median,2.0,1.9355042980856254,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,0.0,4.0,0,fhn_sde,no_external_drive,2,snr_mean,2.0,-8.169034970385505,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,bistable_driven_regularity,eeg_component,1,coherence_median,2.0,1.1431256865117156,boundary_maximum,1.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,bistable_driven_regularity,eeg_component,1,snr_mean,0.0,2.881668063935026,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,bistable_driven_regularity,eeg_component,2,coherence_median,,,no_valid_measurement,,
+chb08,chb08_21.edf,2140.0,2144.0,1,bistable_driven_regularity,eeg_component,2,snr_mean,0.0,2.879542266657966,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,bistable_driven_regularity,no_external_drive,1,coherence_median,,,no_valid_measurement,,
+chb08,chb08_21.edf,2140.0,2144.0,1,bistable_driven_regularity,no_external_drive,1,snr_mean,2.0,-7.6554870417156735,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,bistable_driven_regularity,no_external_drive,2,coherence_median,,,no_valid_measurement,,
+chb08,chb08_21.edf,2140.0,2144.0,1,bistable_driven_regularity,no_external_drive,2,snr_mean,2.0,1.243332080191845,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,fhn_sde,eeg_component,1,coherence_median,0.5,1.5804280786889497,interior_grid_maximum,2.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,fhn_sde,eeg_component,1,snr_mean,0.0,1.1128940181498743,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,fhn_sde,eeg_component,2,coherence_median,2.0,3.281783107996328,boundary_maximum,2.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,fhn_sde,eeg_component,2,snr_mean,0.0,1.1116525137413822,boundary_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,fhn_sde,no_external_drive,1,coherence_median,0.5,1.8329850398991698,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,fhn_sde,no_external_drive,1,snr_mean,0.1,-3.2836353608325233,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,fhn_sde,no_external_drive,2,coherence_median,0.5,2.7066979605836226,interior_grid_maximum,3.0,descriptive only; not a resonance claim
+chb08,chb08_21.edf,2140.0,2144.0,1,fhn_sde,no_external_drive,2,snr_mean,2.0,-3.050756027992725,boundary_maximum,3.0,descriptive only; not a resonance claim

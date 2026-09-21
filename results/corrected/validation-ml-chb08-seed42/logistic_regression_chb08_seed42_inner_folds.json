@@ -1,0 +1,46 @@
+[
+  {
+    "class_ratio": 81.37282229965157,
+    "train_patients": [
+      "chb02",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 287,
+    "training_windows": 23641,
+    "validation_patient": "chb01"
+  },
+  {
+    "class_ratio": 76.69859154929577,
+    "train_patients": [
+      "chb01",
+      "chb03",
+      "chb05"
+    ],
+    "training_positive": 355,
+    "training_windows": 27583,
+    "validation_patient": "chb02"
+  },
+  {
+    "class_ratio": 77.79054054054055,
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb05"
+    ],
+    "training_positive": 296,
+    "training_windows": 23322,
+    "validation_patient": "chb03"
+  },
+  {
+    "class_ratio": 95.98841698841699,
+    "train_patients": [
+      "chb01",
+      "chb02",
+      "chb03"
+    ],
+    "training_positive": 259,
+    "training_windows": 25120,
+    "validation_patient": "chb05"
+  }
+]

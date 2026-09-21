@@ -1,0 +1,14 @@
+{
+  "artifacts": {
+    "feature_selection.csv": "d54e90e78b2c9962ef12557e55a3409fc390a349a41e72f69b451a75753cff0d",
+    "fold.json": "ef3dbe205140f236402690c3e65567386c17eb0c3da0cc97d627322eb83db928",
+    "predictions.csv": "a10ab955c85c5dd1ac220f927719d8a0c3f51876d3b16cce0c723a9739573908",
+    "random_supervised.joblib": "ec5169b043ec9e716e3e1e6954b6c7d9e474e11813d70a0f86c48e3b215ec130",
+    "selected_kd.joblib": "f686f3283016a085bc577a382cc657747e7d85d7e0fe37905da4f5fe0234fc8f",
+    "selected_supervised.joblib": "52e27b50164ce35cf14fc1ff3a08c72f85b620d61cc72693691b5d86776807e0",
+    "teacher.joblib": "725e0b88c1e324611690a519906b34525813b14ba56896e0e1a9e851315afb78",
+    "teacher_importance.csv": "64a375ac2378e01e50d84f56a206b0d3fb046bc1d3bcce50ac47da23ee28c3f8",
+    "training_log.json": "2922fe0040db2dbef09a1184bc533bf6edd7f55b52244748db2964002fa51446"
+  },
+  "status": "complete"
+}

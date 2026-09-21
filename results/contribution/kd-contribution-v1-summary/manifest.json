@@ -1,0 +1,27 @@
+{
+  "artifacts": {
+    "effects_by_seed.csv": "d584eccc2787be8fc8c3fdf622785404bbea86b93d22f4ca4cb7b3b793ba4955",
+    "metrics_by_seed.csv": "496ec670a1b70bd688d8d601c7c8c6b4c2b177c3ae03738b8ed15c8be50d19a6",
+    "paired_effects.csv": "a68f789777ee5029afe23f847f5f15009cd7f319ff1c619dd213dea182d13c45",
+    "patient_effect_summary.csv": "d879068d49010877e3baccefe5c383426b00177b6d4dd34c1d719554abbf464c",
+    "patient_effects_averaged_over_seeds.csv": "2e2090cbca340b09f0be3085d3236d9737e2a49b9e075a1148610d3fc3dd5df3",
+    "patient_f1_seed_variation.csv": "0856a06f4bd5f98b17a7d1b4c1d73cac05e8f3948ab9543e496bfe7d7fd2aaa6",
+    "per_patient_metrics.csv": "5ad696b3f7cbb10488269df7d28c76496c46922dea805b176b28207c8429e2a9",
+    "seed_variation.csv": "9e6845f48cd3c9f12458926c93f2a3c5fe6a88338a7c63820b020d5996e604a3"
+  },
+  "patient_count": 5,
+  "source_sha256": "eb59ea9dbd393d98e00349461155295dc5884f0bbb18919e18439ecd61cbcc84",
+  "sources": {
+    "C:\\Users\\Soumya Bhardwaj\\ML_PROJECT1 - Copy\\results\\contribution\\kd-contribution-v1-seed42": "7012bdffc0e60d810fb556f3cb9dd78b7a0fcc56f25da4064a6c5beec9a8cfde",
+    "C:\\Users\\Soumya Bhardwaj\\ML_PROJECT1 - Copy\\results\\contribution\\kd-contribution-v1-seeds43-44": "b420708c3a8d52e298df6bdc8d7519e6f11408557d1d3cf7d8d0ae6239f1c1f7"
+  },
+  "status": "complete",
+  "student_seeds": [
+    42,
+    43,
+    44
+  ],
+  "teacher_seed": 42,
+  "uncertainty": "descriptive SD, five patients; student seeds conditional on fixed teacher/features; no pooled concatenation over seeds",
+  "version": "kd-contribution-summary-v1"
+}

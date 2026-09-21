@@ -1,0 +1,8 @@
+{
+  "candidate_vs_other30_mae": 0.7440755307407825,
+  "candidate_vs_other30_rank": 0.9658394040416513,
+  "current42_vs_other30_mae": 4.954997350744611,
+  "current42_vs_other30_rank": 0.6685845989216775,
+  "split_first_two_blocks_mae": 0.9668185671842069,
+  "split_first_two_blocks_rank": 0.9328312137300901
+}
